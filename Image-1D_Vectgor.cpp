@@ -31,6 +31,7 @@ public:
     void Brightening();
     void Flip();
     void Sharpen();
+    void Smoothing();
     void Convolution();
     void Box_Blur();
     void Gaussian_Blur();
@@ -379,6 +380,51 @@ void Image::Convolution()
     cout<<"Convolution Complete!"<<endl;
 }
 
+void Image::Smoothing()
+{
+
+
+    float filter[3][3]= {
+                        {1,1,1},
+                        {1,1,1},
+                        {1,1,1}
+                        };
+
+
+
+    for(int y=1; y<m_height-1; ++y)
+    {
+        for(int x=1; x<m_width-1; ++x)
+        {
+            float r=0,g=0,b=0;
+
+            r+=m_colors[(y-1)*m_width+(x-1)].r*filter[0][0]+m_colors[(y-1)*m_width+(x)].r*filter[0][1]+m_colors[(y-1)*m_width+(x+1)].r*filter[0][2];
+            g+=m_colors[(y-1)*m_width+(x-1)].g*filter[0][0]+m_colors[(y-1)*m_width+(x)].g*filter[0][1]+m_colors[(y-1)*m_width+(x+1)].g*filter[0][2];
+            b+=m_colors[(y-1)*m_width+(x-1)].b*filter[0][0]+m_colors[(y-1)*m_width+(x)].b*filter[0][1]+m_colors[(y-1)*m_width+(x+1)].b*filter[0][2];
+
+            r+=m_colors[(y)*m_width+(x-1)].r*filter[1][0]+m_colors[(y)*m_width+(x)].r*filter[1][1]+m_colors[(y)*m_width+(x+1)].r*filter[1][2];
+            g+=m_colors[(y)*m_width+(x-1)].g*filter[1][0]+m_colors[(y)*m_width+(x)].g*filter[1][1]+m_colors[(y)*m_width+(x+1)].g*filter[1][2];
+            b+=m_colors[(y)*m_width+(x-1)].b*filter[1][0]+m_colors[(y)*m_width+(x)].b*filter[1][1]+m_colors[(y)*m_width+(x+1)].b*filter[1][2];
+
+            r+=m_colors[(y+1)*m_width+(x-1)].r*filter[2][0]+m_colors[(y+1)*m_width+(x)].r*filter[2][1]+m_colors[(y+1)*m_width+(x+1)].r*filter[2][2];
+            g+=m_colors[(y+1)*m_width+(x-1)].g*filter[2][0]+m_colors[(y+1)*m_width+(x)].g*filter[2][1]+m_colors[(y+1)*m_width+(x+1)].g*filter[2][2];
+            b+=m_colors[(y+1)*m_width+(x-1)].b*filter[2][0]+m_colors[(y+1)*m_width+(x)].b*filter[2][1]+m_colors[(y+1)*m_width+(x+1)].b*filter[2][2];
+
+            r/=9;
+            g/=9;
+            b/=9;
+
+
+            m_colors[y*m_width+x].r=r;
+            m_colors[y*m_width+x].g=g;
+            m_colors[y*m_width+x].b=b;
+        }
+
+    }
+
+    cout<<"Smoothing Complete!"<<endl;
+}
+
 void Image::Sharpen()
 {
     int kernel[4][9] = {
@@ -620,10 +666,10 @@ void Image:: SobelEdgeDetection()
     {
         for(int x=1; x<m_width-1; ++x)
         {
-            float r1=0,gx=0,bx=0;
+            float rx=0,gx=0,bx=0;
 
 
-            r1+=m_colors[(y-1)*m_width+(x-1)].r*gx[0][0]+m_colors[(y-1)*m_width+(x)].r*gx[0][1]+m_colors[(y-1)*m_width+(x+1)].r*gx[0][2];
+            rx+=m_colors[(y-1)*m_width+(x-1)].r*gx[0][0]+m_colors[(y-1)*m_width+(x)].r*gx[0][1]+m_colors[(y-1)*m_width+(x+1)].r*gx[0][2];
             gx+=m_colors[(y-1)*m_width+(x-1)].g*gx[0][0]+m_colors[(y-1)*m_width+(x)].g*gx[0][1]+m_colors[(y-1)*m_width+(x+1)].g*gx[0][2];
             bx+=m_colors[(y-1)*m_width+(x-1)].b*gx[0][0]+m_colors[(y-1)*m_width+(x)].b*gx[0][1]+m_colors[(y-1)*m_width+(x+1)].b*gx[0][2];
 
