@@ -35,6 +35,7 @@ public:
     void Box_Blur();
     void Gaussian_Blur();
     void Gaussian_Blur5_5();
+    void SobelEdgeDetection();
     void Angle_Calculation();
     void Export(const char* path)const;
     void Histogram();
@@ -303,6 +304,10 @@ void Image :: Flip()
     {
         for (int x = 0; x < m_width/2; ++x)
         {
+
+            swap(m_colors[y*m_width+x], m_colors[y*m_width+(m_width-x-1)]);
+
+            /*
             float  red=0,green=0,blue=0;
 
 
@@ -316,7 +321,7 @@ void Image :: Flip()
 
             blue=m_colors[y*m_width+(m_width-x+1)].b;
             m_colors[y*m_width+(m_width-x+1)].b=m_colors[y*m_width+x].b;
-            m_colors[y*m_width+x].b=blue;
+            m_colors[y*m_width+x].b=blue;   */
 
 
         }
@@ -376,9 +381,41 @@ void Image::Convolution()
 
 void Image::Sharpen()
 {
+    int kernel[4][9] = {
+                      {0, 1, 0, 1, -4 , 1, 0, 1 , 0},
+                      {0, -1, 0, -1, 4, -1, 0, -1, 0},
+                      {1, 1, 1, 1 , -8, 1, 1, 1, 1},
+                      {-1, -1, -1, -1, 8, -1, -1, -1, -1},
+                    };
 
+    cout<<"\n\nChoose Filter : "<<endl;
+    cout<<"\n1 -> Laplacian filter.\n";
+    cout<<"2 -> Strong Laplacian filter.\n";
+    cout<<"3 -> High Boost Filter.\n";
+    cout<<"4 -> Strong High Boost Filter.\n";
 
-    float filter[3][3]= {{0,-1,0},{-1,5,-1},{0,-1,0}};
+    float filter[3][3];
+    int choice;
+    int index=0;
+
+    cout<<"choice : ";
+    cin>>choice;
+
+    cout<<"\n\n\n"<<endl;
+
+    for(int i=0; i<3; ++i)
+    {
+        for(int j=0; j<3; ++j)
+        {
+            filter[i][j]=kernel[choice][index];
+            index++;
+        }
+
+    }
+
+    // float filter[3][3]= {{-1,-1,-1},{-1,9,-1},{-1,-1,-1}};
+
+  //  float filter[3][3]= {{0,-1,0},{-1,5,-1},{0,-1,0}};
 
     //  int filter[3][3]={{1,2,1},{2,4,2},{1,2,1}};
 
@@ -388,7 +425,7 @@ void Image::Sharpen()
     {
         for(int x=1; x<m_width-1; ++x)
         {
-            float r=0,g=0,b=0;
+            double r=0,g=0,b=0;
 
             r+=m_colors[(y-1)*m_width+(x-1)].r*filter[0][0]+m_colors[(y-1)*m_width+(x)].r*filter[0][1]+m_colors[(y-1)*m_width+(x+1)].r*filter[0][2];
             g+=m_colors[(y-1)*m_width+(x-1)].g*filter[0][0]+m_colors[(y-1)*m_width+(x)].g*filter[0][1]+m_colors[(y-1)*m_width+(x+1)].g*filter[0][2];
@@ -401,6 +438,16 @@ void Image::Sharpen()
             r+=m_colors[(y+1)*m_width+(x-1)].r*filter[2][0]+m_colors[(y+1)*m_width+(x)].r*filter[2][1]+m_colors[(y+1)*m_width+(x+1)].r*filter[2][2];
             g+=m_colors[(y+1)*m_width+(x-1)].g*filter[2][0]+m_colors[(y+1)*m_width+(x)].g*filter[2][1]+m_colors[(y+1)*m_width+(x+1)].g*filter[2][2];
             b+=m_colors[(y+1)*m_width+(x-1)].b*filter[2][0]+m_colors[(y+1)*m_width+(x)].b*filter[2][1]+m_colors[(y+1)*m_width+(x+1)].b*filter[2][2];
+
+
+            r = min(255.0,r);
+            r=max(0.0, r);
+
+            g = min(255.0,g);
+            g=max(0.0, g);
+
+            b = min(255.0,b);
+            b=max(0.0, b);
 
 
             m_colors[y*m_width+x].r=r;
@@ -490,9 +537,6 @@ void Image::Gaussian_Blur()
             g/=16;
             b/=16;
 
-            /* (r>150)? r=255 : r=0;
-             (g>150)? g=255 : g=0;
-             (b>150)? b=255 : b=0; */
 
             m_colors[y*m_width+x].r=r;
             m_colors[y*m_width+x].g=g;
@@ -560,6 +604,80 @@ void Image::Gaussian_Blur5_5()
     }
 
     cout<<"Gaussian Blur(5*5)!"<<endl;
+}
+
+void Image:: SobelEdgeDetection()
+{
+     float gx[3][3] = {{-1,0,1},
+                   {-2,0,2},
+                   {-1,0,1}};
+
+    float gy[3][3] = {{1,2,1},
+                    {0,0,0},
+                    {-1,-2,-1}};
+
+     for(int y=1; y<m_height-1; ++y)
+    {
+        for(int x=1; x<m_width-1; ++x)
+        {
+            float r1=0,gx=0,bx=0;
+
+
+            r1+=m_colors[(y-1)*m_width+(x-1)].r*gx[0][0]+m_colors[(y-1)*m_width+(x)].r*gx[0][1]+m_colors[(y-1)*m_width+(x+1)].r*gx[0][2];
+            gx+=m_colors[(y-1)*m_width+(x-1)].g*gx[0][0]+m_colors[(y-1)*m_width+(x)].g*gx[0][1]+m_colors[(y-1)*m_width+(x+1)].g*gx[0][2];
+            bx+=m_colors[(y-1)*m_width+(x-1)].b*gx[0][0]+m_colors[(y-1)*m_width+(x)].b*gx[0][1]+m_colors[(y-1)*m_width+(x+1)].b*gx[0][2];
+
+            rx+=m_colors[(y)*m_width+(x-1)].r*gx[1][0]+m_colors[(y)*m_width+(x)].r*gx[1][1]+m_colors[(y)*m_width+(x+1)].r*gx[1][2];
+            gx+=m_colors[(y)*m_width+(x-1)].g*gx[1][0]+m_colors[(y)*m_width+(x)].g*gx[1][1]+m_colors[(y)*m_width+(x+1)].g*gx[1][2];
+            bx+=m_colors[(y)*m_width+(x-1)].b*gx[1][0]+m_colors[(y)*m_width+(x)].b*gx[1][1]+m_colors[(y)*m_width+(x+1)].b*gx[1][2];
+
+            rx+=m_colors[(y+1)*m_width+(x-1)].r*gx[2][0]+m_colors[(y+1)*m_width+(x)].r*gx[2][1]+m_colors[(y+1)*m_width+(x+1)].r*gx[2][2];
+            gx+=m_colors[(y+1)*m_width+(x-1)].g*gx[2][0]+m_colors[(y+1)*m_width+(x)].g*gx[2][1]+m_colors[(y+1)*m_width+(x+1)].g*gx[2][2];
+            bx+=m_colors[(y+1)*m_width+(x-1)].b*gx[2][0]+m_colors[(y+1)*m_width+(x)].b*gx[2][1]+m_colors[(y+1)*m_width+(x+1)].b*gx[2][2];
+
+            double ry=0,gy=0,by=0;
+
+            ry+=m_colors[(y-1)*m_width+(x-1)].r*gy[0][0]+m_colors[(y-1)*m_width+(x)].r*gy[0][1]+m_colors[(y-1)*m_width+(x+1)].r*gy[0][2];
+            gy+=m_colors[(y-1)*m_width+(x-1)].g*gy[0][0]+m_colors[(y-1)*m_width+(x)].g*gy[0][1]+m_colors[(y-1)*m_width+(x+1)].g*gy[0][2];
+            by+=m_colors[(y-1)*m_width+(x-1)].b*gy[0][0]+m_colors[(y-1)*m_width+(x)].b*gy[0][1]+m_colors[(y-1)*m_width+(x+1)].b*gy[0][2];
+
+            ry+=m_colors[(y)*m_width+(x-1)].r*gy[1][0]+m_colors[(y)*m_width+(x)].r*gy[1][1]+m_colors[(y)*m_width+(x+1)].r*gy[1][2];
+            gy+=m_colors[(y)*m_width+(x-1)].g*gy[1][0]+m_colors[(y)*m_width+(x)].g*gy[1][1]+m_colors[(y)*m_width+(x+1)].g*gy[1][2];
+            by+=m_colors[(y)*m_width+(x-1)].b*gy[1][0]+m_colors[(y)*m_width+(x)].b*gy[1][1]+m_colors[(y)*m_width+(x+1)].b*gy[1][2];
+
+            ry+=m_colors[(y+1)*m_width+(x-1)].r*gy[2][0]+m_colors[(y+1)*m_width+(x)].r*gy[2][1]+m_colors[(y+1)*m_width+(x+1)].r*gy[2][2];
+            gy+=m_colors[(y+1)*m_width+(x-1)].g*gy[2][0]+m_colors[(y+1)*m_width+(x)].g*gy[2][1]+m_colors[(y+1)*m_width+(x+1)].g*gy[2][2];
+            by+=m_colors[(y+1)*m_width+(x-1)].b*gy[2][0]+m_colors[(y+1)*m_width+(x)].b*gy[2][1]+m_colors[(y+1)*m_width+(x+1)].b*gy[2][2];
+
+
+            double sqrtBlue = (double)(sqrt(bx*bx + by*by));
+            double sqrtGreen = (double)(sqrt(gx*gx+ gy*gy));
+            double sqrtRed = (double)(sqrt(rx*rx + ry*ry));
+
+
+            if(sqrtBlue > 127)
+            {
+                sqrtBlue = 255;
+            }
+            if(sqrtGreen > 127)
+            {
+                sqrtGreen = 255;
+            }
+            if(sqrtRed > 127)
+            {
+                sqrtRed = 255;
+            }
+
+
+             float avg= (sqrtBlue + sqrtGreen + sqrtRed)/3;
+            m_colors[y*m_width+x].r=avg;
+            m_colors[y*m_width+x].g=avg;
+            m_colors[y*m_width+x].b=avg;
+
+        }
+
+    }
+
 }
 
 void Image::Angle_Calculation()
@@ -1016,15 +1134,16 @@ int main()
            break;
 
        case 6:
-           readImage.Gaussian_Blur5_5();
+          // readImage.Gaussian_Blur5_5();
+          readImage.SobelEdgeDetection();
            break;
 
        case 7:
-           readImage.Angle_Calculation();
+           readImage.Sharpen();
            break;
 
        case 8:
-           readImage.Histogram();
+           //readImage.SobelEdgeDetection();
            break;
 
        case 9:
