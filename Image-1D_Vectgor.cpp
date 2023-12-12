@@ -212,33 +212,40 @@ void Image :: Grayscale()
 
 void Image :: Brightening()
 {
-    for(int y=0; y<m_height; ++y)
+
+    cout << "---------------------Brightening--------------------\n\n";
+    cout << "Input the brightness level between -255 to +255 : ";
+    double level;
+    cin >> level;
+
+    if(level > 255 || level < -255)
     {
-        for(int x=0; x<m_width; ++x)
+        cout<<"Invalid brightness level";
+        return;
+    }
+    else
+    {
+         for(int y = 0; y < m_height; y++)
         {
-            float r=0,g=0,b=0;
+           for(int x = 0; x < m_width; x++)
+           {
+              double r=0,g=0,b=0;
 
             r=m_colors[y*m_width+x].r;
+            r = r + min(level, (255 - r));
+            m_colors[y*m_width+x].r=max(0.0, r);
+
             g=m_colors[y*m_width+x].g;
+            g = g + min(level, (255 - g));
+            m_colors[y*m_width+x].g=max(0.0, g);
+
             b=m_colors[y*m_width+x].b;
-
-            r*=2;
-            if(r>=255) r=255;
-
-
-            g*=2;
-            if(g>=255) g=255;
-
-            r*=2;
-            if(b>=255) b=255;
-
-
-            m_colors[y*m_width+x].r=r;
-            m_colors[y*m_width+x].g=g;
-            m_colors[y*m_width+x].b=b;
+            b = b + min(level, (255 - b));
+            m_colors[y*m_width+x].b=max(0.0, b);
+           }
         }
-
     }
+
 
     cout<<"Brightening done!"<<endl;
 }
@@ -982,7 +989,7 @@ int main()
 
     cout<<"     Reading Image....."<<endl<<endl;
 
-    readImage.Read("Cat.bmp");
+    readImage.Read("baboon.bmp");
 
 
 
