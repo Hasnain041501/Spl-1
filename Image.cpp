@@ -40,7 +40,9 @@ public:
 private:
     int m_width;
     int m_height;
-    std::vector<std::vector<Color>> m_colors;
+    vector<vector<Color>> m_colors;//(1000, vector<int>(1000));
+   // Color m_colors[1000][1000];
+   // m_colors.resize(1000, vector<Color>(1000));
 };
 
 
@@ -119,6 +121,7 @@ void Image::Read(const char* path)
     {
         for(int y=0; y<m_width; ++y)
         {
+             cout<<"---***---"<<endl;
             unsigned char color[3];
             f.read(reinterpret_cast<char*>(color),3);
             /*//original operation
@@ -129,6 +132,8 @@ void Image::Read(const char* path)
             m_colors[x][y].r=static_cast<float>(color[0]);//255.0f;
             m_colors[x][y].g=static_cast<float>(color[1]);//255.0f;
             m_colors[x][y].b=static_cast<float>(color[2]);//255.0f;
+
+
 
         }
 
@@ -883,6 +888,8 @@ void printManu()
 
 int main()
 {
+
+
 
     cout<<"------Basic Image Processing Tools-----"<<endl;
     printManu();
