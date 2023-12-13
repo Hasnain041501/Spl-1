@@ -34,7 +34,6 @@ public:
     void Smoothing();
     void Box_Blur();
     void Gaussian_Blur();
-    void Gaussian_Blur5_5();
     void SobelEdgeDetection();
     void Angle_Calculation();
     void Histogram();
@@ -545,8 +544,8 @@ void Image::Gaussian_Blur()
 
     cout<<"\t\t\t\t!!----------Gaussian Blur----------!!"<<endl;
 
-    cout<<"1-> (3 × 3) Gaussian Blur"<<endl;
-    cout<<"2-> (5 × 5) Gaussian Blur"<<endl;
+    cout<<"1-> (3 * 3) Gaussian Blur"<<endl;
+    cout<<"2-> (5 * 5) Gaussian Blur"<<endl;
 
 
     int choice;
@@ -649,10 +648,12 @@ void Image::Gaussian_Blur()
             m_colors[y*m_width+x].b=b;
         }
 
+    }
     }else
     {
         cout<<"Invalid Input!!"<<endl;
         cout<<"\tTry Again."<<endl;
+        readImage.Gaussian_Blur();
     }
 
 
@@ -679,6 +680,16 @@ void Image:: SobelEdgeDetection()
         {0,0,0},
         {-1,-2,-1}
     };
+
+    int upThreshold;
+    cout<<"Enter Threshold upper value for Edge Detection : ";
+    cin>>upThreshold;
+
+
+    int downThreshold;
+    cout<<"Enter Threshold lower value for Edge Detection : ";
+    cin>>downThreshold;
+
 
     for(int y=1; y<m_height-1; ++y)
     {
@@ -719,18 +730,38 @@ void Image:: SobelEdgeDetection()
             double sqrtRed = (double)(sqrt(Rx*Rx + Ry*Ry));
 
 
-            if(sqrtBlue > 127)
+
+
+            if(sqrtBlue > upThreshold)
             {
                 sqrtBlue = 255;
             }
-            if(sqrtGreen > 127)
+            if(sqrtGreen > upThreshold)
             {
                 sqrtGreen = 255;
             }
-            if(sqrtRed > 127)
+            if(sqrtRed > upThreshold)
             {
                 sqrtRed = 255;
             }
+
+
+
+
+            if(sqrtBlue < downThreshold)
+            {
+                sqrtBlue = 0;
+            }
+            if(sqrtGreen < downThreshold)
+            {
+                sqrtGreen = 0;
+            }
+            if(sqrtRed < downThreshold)
+            {
+                sqrtRed = 0;
+            }
+
+
 
 
             float avg= (sqrtBlue + sqrtGreen + sqrtRed)/3;
@@ -742,7 +773,15 @@ void Image:: SobelEdgeDetection()
 
     }
 
-    cout<<"---Sobel---"<<endl;
+
+
+    cout<<"\n"<<endl;
+    cout<<"\t\t\t!!----Sobel EdgeDetection Complete---!!"<<endl;
+    cout<<"\n"<<endl;
+
+    cout<<"\tCreating Edge Detection Image......"<<endl;
+    cout<<"\tEdge Detection Image Created named \"SobelImage.bmp\"......"<<endl;
+    readImage.Export("SobelImage.bmp");
 
 }
 
@@ -938,8 +977,6 @@ void Image :: Export(const char* path)const
 
     unsigned char bmpPad[3]= {0,0,0};
     int paddingAmount=(4-((m_width*3)%4)%4);
-//   cout<<"Padding in Writing Image : "<<endl;
-    //  cout<<paddingAmount<<endl;
     const int fileHeaderSize=14;
     const int infoHeaderSize=40;
     const int fileSize=fileHeaderSize+infoHeaderSize+(m_width*m_height*3)+paddingAmount*m_height;
@@ -1045,9 +1082,9 @@ void Image :: Export(const char* path)const
     {
         for(int x=0; x<m_width; ++x)
         {
-            unsigned char r=static_cast<unsigned char>(GetColor(x,y).r);//*255.0f);
-            unsigned char g=static_cast<unsigned char>(GetColor(x,y).g);//*255.0f);
-            unsigned char b=static_cast<unsigned char>(GetColor(x,y).b);//*255.0f);
+            unsigned char r=static_cast<unsigned char>(GetColor(x,y).r);
+            unsigned char g=static_cast<unsigned char>(GetColor(x,y).g);
+            unsigned char b=static_cast<unsigned char>(GetColor(x,y).b);
 
             unsigned char color[]= {r,g,b};
             f.write(reinterpret_cast<char*>(color),3);
@@ -1107,10 +1144,7 @@ void Image :: Histogram()
     }
 
 
-
-
     int cdfMin;
-    //  cdfMin=min(cdf);
     cdfMin=cdf[0];
     for(int i=1; i<256; ++i)
     {
@@ -1148,28 +1182,27 @@ void printManu()
     cout<<"2->Negative"<<endl;
     cout<<"3->Grayscale"<<endl;
     cout<<"4->Brightening"<<endl;
-    cout<<"5->Box Blur"<<endl;
-    // cout<<"5->Flip Image"<<endl;
-    cout<<"6->Gaussian Blur"<<endl;
-    cout<<"7->Angle Calculation"<<endl;
-    // cout<<"8->Histogram"<<endl;
-    cout<<"9->Sobel Edge Detection"<<endl;
-    cout<<"10->Export"<<endl;
+    cout<<"5->Flip Image"<<endl;
+    cout<<"6->Sharpen Image"<<endl;
+    cout<<"7->Smoothing Image"<<endl;
+    cout<<"8->Box Blur"<<endl;
+    cout<<"9->Gaussian Blur"<<endl;
+    cout<<"10->Sobel Edge Detection"<<endl;
+    cout<<"11->Angle Calculation"<<endl;
+    cout<<"12->Histogram"<<endl;
+    cout<<"13->Export"<<endl;
 
 }
 
 int main()
 {
 
-    cout<<"------Basic Image Processing Tools-----"<<endl;
+    cout<<"\n";
+    cout<<"\t\t\t";
+    cout<<"!!!----------Basic Image Processing Tools----------!!!"<<endl;
+
+
     printManu();
-
-
-
-
-    Image readImage(0,0);
-
-
 
 
     bool flag;
@@ -1204,61 +1237,48 @@ int main()
             break;
 
         case 5:
-            //readImage.Box_Blur();
             readImage.Flip();
             break;
 
         case 6:
-          readImage.Gaussian_Blur5_5();
+          readImage.Sharpen();
           break;
 
         case 7:
-            readImage.Sharpen();
+            readImage.Smoothing();
             break;
 
         case 8:
-            //readImage.SobelEdgeDetection();
+            readImage.Box_Blur();
             break;
 
         case 9:
-            readImage.SobelEdgeDetection();
+            readImage.Gaussian_Blur();
             break;
 
         case 10:
+            readImage.SobelEdgeDetection();
+            break;
+
+        case 11:
+            readImage.Angle_Calculation();
+            break;
+
+        case 12:
+            readImage.Histogram();
+            break;
+
+        case 13:
             flag=false;
             break;
+
+        default :
+            cout<<"Invalid Input !"<<endl;
+            cout<<"Try Again."<<endl;
 
         }
 
     }
-
-    cout<<"Creating NewImage......"<<endl;
-    readImage.Export("NewImage.bmp");
-
-
-
-
-    // readImage.Read("zebra.bmp");
-//readImage.Export("baboon.txt");
-//    readImage.Flip();
-
-//Color x=readImage.GetColor(10,3);
-//cout<<x.r<<" "<<x.g<<" "<<x.b<<" "<<endl;
-
-//   readImage.Convolution();
-//      readImage.Negative();
-//    readImage.Grayscale();
-//     readImage.Brightening();
-
-//    readImage.valueTest();
-//    readImage.Angle_Calculation();
-    //  readImage.Histogram();
-//   readImage.Gaussian_Blur();
-
-    //  readImage.Export("exportZebra.bmp");
-
-//readImage.Export("redImage.txt");
-
 
 
     return 0;
