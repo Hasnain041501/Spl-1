@@ -516,9 +516,6 @@ void Image::Box_Blur()
             g/=9;
             b/=9;
 
-            /* (r>150)? r=255 : r=0;
-             (g>150)? g=255 : g=0;
-             (b>150)? b=255 : b=0; */
 
             m_colors[y*m_width+x].r=r;
             m_colors[y*m_width+x].g=g;
@@ -788,11 +785,158 @@ void Image:: SobelEdgeDetection()
 
 void Image::Angle_Calculation()
 {
-    //Gx && Gy
+
+   int gx[3][3] = {{-1,0,1},
+        {-2,0,2},
+        {-1,0,1}
+    };
+
+    int gy[3][3] = {{1,2,1},
+        {0,0,0},
+        {-1,-2,-1}
+    };
+
+    int upThreshold;
+    cout<<"Enter Threshold upper value for Edge Detection : ";
+    cin>>upThreshold;
+
+
+    int downThreshold;
+    cout<<"Enter Threshold lower value for Edge Detection : ";
+    cin>>downThreshold;
 
 
 
-    //Grayscale
+    for(int y=1; y<m_height-1; ++y)
+    {
+        for(int x=1; x<m_width-1; ++x)
+        {
+            float Rx=0,Gx=0,Bx=0;
+
+
+            Rx+=m_colors[(y-1)*m_width+(x-1)].r*gx[0][0]+m_colors[(y-1)*m_width+(x)].r*gx[0][1]+m_colors[(y-1)*m_width+(x+1)].r*gx[0][2];
+            Gx+=m_colors[(y-1)*m_width+(x-1)].g*gx[0][0]+m_colors[(y-1)*m_width+(x)].g*gx[0][1]+m_colors[(y-1)*m_width+(x+1)].g*gx[0][2];
+            Bx+=m_colors[(y-1)*m_width+(x-1)].b*gx[0][0]+m_colors[(y-1)*m_width+(x)].b*gx[0][1]+m_colors[(y-1)*m_width+(x+1)].b*gx[0][2];
+
+            Rx+=m_colors[(y)*m_width+(x-1)].r*gx[1][0]+m_colors[(y)*m_width+(x)].r*gx[1][1]+m_colors[(y)*m_width+(x+1)].r*gx[1][2];
+            Gx+=m_colors[(y)*m_width+(x-1)].g*gx[1][0]+m_colors[(y)*m_width+(x)].g*gx[1][1]+m_colors[(y)*m_width+(x+1)].g*gx[1][2];
+            Bx+=m_colors[(y)*m_width+(x-1)].b*gx[1][0]+m_colors[(y)*m_width+(x)].b*gx[1][1]+m_colors[(y)*m_width+(x+1)].b*gx[1][2];
+
+            Rx+=m_colors[(y+1)*m_width+(x-1)].r*gx[2][0]+m_colors[(y+1)*m_width+(x)].r*gx[2][1]+m_colors[(y+1)*m_width+(x+1)].r*gx[2][2];
+            Gx+=m_colors[(y+1)*m_width+(x-1)].g*gx[2][0]+m_colors[(y+1)*m_width+(x)].g*gx[2][1]+m_colors[(y+1)*m_width+(x+1)].g*gx[2][2];
+            Bx+=m_colors[(y+1)*m_width+(x-1)].b*gx[2][0]+m_colors[(y+1)*m_width+(x)].b*gx[2][1]+m_colors[(y+1)*m_width+(x+1)].b*gx[2][2];
+
+            double Ry=0,Gy=0,By=0;
+
+            Ry+=m_colors[(y-1)*m_width+(x-1)].r*gy[0][0]+m_colors[(y-1)*m_width+(x)].r*gy[0][1]+m_colors[(y-1)*m_width+(x+1)].r*gy[0][2];
+            Gy+=m_colors[(y-1)*m_width+(x-1)].g*gy[0][0]+m_colors[(y-1)*m_width+(x)].g*gy[0][1]+m_colors[(y-1)*m_width+(x+1)].g*gy[0][2];
+            By+=m_colors[(y-1)*m_width+(x-1)].b*gy[0][0]+m_colors[(y-1)*m_width+(x)].b*gy[0][1]+m_colors[(y-1)*m_width+(x+1)].b*gy[0][2];
+
+            Ry+=m_colors[(y)*m_width+(x-1)].r*gy[1][0]+m_colors[(y)*m_width+(x)].r*gy[1][1]+m_colors[(y)*m_width+(x+1)].r*gy[1][2];
+            Gy+=m_colors[(y)*m_width+(x-1)].g*gy[1][0]+m_colors[(y)*m_width+(x)].g*gy[1][1]+m_colors[(y)*m_width+(x+1)].g*gy[1][2];
+            By+=m_colors[(y)*m_width+(x-1)].b*gy[1][0]+m_colors[(y)*m_width+(x)].b*gy[1][1]+m_colors[(y)*m_width+(x+1)].b*gy[1][2];
+
+            Ry+=m_colors[(y+1)*m_width+(x-1)].r*gy[2][0]+m_colors[(y+1)*m_width+(x)].r*gy[2][1]+m_colors[(y+1)*m_width+(x+1)].r*gy[2][2];
+            Gy+=m_colors[(y+1)*m_width+(x-1)].g*gy[2][0]+m_colors[(y+1)*m_width+(x)].g*gy[2][1]+m_colors[(y+1)*m_width+(x+1)].g*gy[2][2];
+            By+=m_colors[(y+1)*m_width+(x-1)].b*gy[2][0]+m_colors[(y+1)*m_width+(x)].b*gy[2][1]+m_colors[(y+1)*m_width+(x+1)].b*gy[2][2];
+
+
+            float resultR,AngleR;
+            if (Rx==0)
+            {
+                AngleR=90;
+            }
+            else{
+                resultR = (Ry/Rx);
+                resultR=atan(resultR);
+                AngleR=(resultR*180)/3.1415;
+
+            }
+
+
+            float resultG,AngleG;
+            if (Gx==0)
+            {
+                AngleG=90;
+            }
+            else{
+                resultG = (Gy/Gx);
+                resultG=atan(resultG);
+                AngleG=(resultG*180)/3.1415;
+
+            }
+
+            float resultB,AngleB;
+            if (Bx==0)
+            {
+                AngleB=90;
+                continue;
+            }
+            else{
+                resultB = (By/Bx);
+                resultB=atan(resultB);
+                AngleB=(resultB*180)/3.1415;
+
+            }
+
+
+             if(AngleR > upThreshold)
+            {
+                AngleR = 255;
+            }
+            if(AngleG > upThreshold)
+            {
+                AngleG = 255;
+            }
+            if(AngleB > upThreshold)
+            {
+                AngleB = 255;
+            }
+
+
+
+
+            if(AngleR < downThreshold)
+            {
+                AngleR = 0;
+            }
+            if(AngleG < downThreshold)
+            {
+                AngleG = 0;
+            }
+            if(AngleB < downThreshold)
+            {
+                AngleB = 0;
+            }
+
+
+            m_colors[y*m_width+x].r=AngleR;
+            m_colors[y*m_width+x].g=AngleG;
+            m_colors[y*m_width+x].b=AngleB;
+
+
+
+        }
+
+    }
+
+
+    cout<<"---Angle---"<<endl;
+
+    cout<<"\n"<<endl;
+    cout<<"\t\t\t!!----Angle Calculation Complete---!!"<<endl;
+    cout<<"\n"<<endl;
+
+    cout<<"\tCreating  Image......"<<endl;
+    cout<<"\tImage Created named \"AngleImage.bmp\"......"<<endl;
+    readImage.Export("AngleImage.bmp");
+}
+
+
+
+
+void Image :: Histogram()
+{
     for(int y=0; y<m_height; ++y)
     {
         for(int x=0; x<m_width; ++x)
@@ -803,7 +947,7 @@ void Image::Angle_Calculation()
             g=m_colors[y*m_width+x].g;
             b=m_colors[y*m_width+x].b;
 
-            float avg=0;
+            int avg=0;
             avg=(r+g+b)/3;
 
             m_colors[y*m_width+x].r=avg;
@@ -813,155 +957,84 @@ void Image::Angle_Calculation()
 
     }
 
+    int Hist[256]= {0};
+
+    for(int y=0; y<m_height; ++y)
+    {
+        for(int x=0; x<m_width; ++x)
+        {
+            int val=0;
+            val=m_colors[y*m_width+x].r;
+            Hist[val]+=1;
+        }
+    }
 
 
+    long long int cdf[256]= {0};
+    cdf[0]=Hist[0];
 
-    //Gx
-
-    float filterX[3][3]= {{1,0,-1},{2,0,-2},{1,0,-1}};
-
-
-
-    float Gx[m_height][m_width];//G[m_height][m_width];
-
-
-    for(int y=1; y<m_height-1; ++y)
+    for(int i=1; i<256; ++i)
     {
 
-        for(int x=1; x<m_width-1; ++x)
-        {
-            // cout<<x<<" ";
-            float r=0;
 
-            r+=m_colors[(y-1)*m_width+(x-1)].r*filterX[0][0]+m_colors[(y-1)*m_width+(x)].r*filterX[0][1]+m_colors[(y-1)*m_width+(x+1)].r*filterX[0][2];
-
-            r+=m_colors[(y)*m_width+(x-1)].r*filterX[1][0]+m_colors[(y)*m_width+(x)].r*filterX[1][1]+m_colors[(y)*m_width+(x+1)].r*filterX[1][2];
-
-
-            r+=m_colors[(y+1)*m_width+(x-1)].r*filterX[2][0]+m_colors[(y+1)*m_width+(x)].r*filterX[2][1]+m_colors[(y+1)*m_width+(x+1)].r*filterX[2][2];
-
-
-            Gx[y][x]=r;
-
-            // cout<<Gx[x][y]<<" ";
-
-            /*  Gx[x][y].r=r;
-              Gx[x][y].g=g;
-              Gx[x][y].b=b; */
-        }
-
-        //  cout<<"---***---";
+        cdf[i]=cdf[i-1]+Hist[i];
 
     }
 
 
-    for(int y=90; y<100-1; ++y)
+    int cdfMin;
+    cdfMin=cdf[0];
+    for(int i=1; i<256; ++i)
     {
-        for(int x=90; x<100-1; ++x)
-        {
-            cout<<Gx[y][x]<<" "<<endl;
+        if(cdf[i]<cdfMin)
+            cdfMin=cdf[i];
+    }
 
 
-        }
+    int histogram[256]= {0};
+
+    for(int i=0; i<256; ++i)
+    {
+        histogram[i]=round((cdf[i]-cdfMin)*255)/((m_height*m_width)-cdfMin);
 
     }
 
 
-    cout<<"\n\n\n\n";
-
-
-
-
-    //Gy
-    float filterY[3][3]= {{1,2,1},{0,0,0},{-1,-2,-1}};
-
-    float Gy[m_height][m_width];
-
-    for(int y=1; y<m_height-1; ++y)
+     // Printing histogram
+    printf("Histogram : \n\n");
+    for(int i = 0; i < 256; i++)
     {
-        for(int x=1; x<m_width-1; ++x)
+        if(i < 10)
         {
-            float r=0;
-
-            r+=m_colors[(y-1)*m_width+(x-1)].r*filterY[0][0]+m_colors[(y-1)*m_width+(x)].r*filterY[0][1]+m_colors[(y-1)*m_width+(x+1)].r*filterY[0][2];
-
-
-            r+=m_colors[(y)*m_width+(x-1)].r*filterY[1][0]+m_colors[(y)*m_width+(x)].r*filterY[1][1]+m_colors[(y)*m_width+(x+1)].r*filterY[1][2];
-
-            r+=m_colors[(y+1)*m_width+(x-1)].r*filterY[2][0]+m_colors[(y+1)*m_width+(x)].r*filterY[2][1]+m_colors[(y+1)*m_width+(x+1)].r*filterY[2][2];
-
-
-            Gy[y][x]=r;
-
-            /*   Gy[x][y].r=r;
-               Gy[x][y].g=g;
-               Gy[x][y].b=b; */
+            printf("[%d]   | ",i);
+            for(int j = 0; j <= (Hist[i]%20); j++)
+            printf("*");
+            printf("-->(%d)",Hist[i]);
+            printf("\t\t\t\t\t\t\t   ||Equalized value {%d}",histogram[i]);
+            printf("\n");
         }
-
+        else if(i < 100)
+        {
+            printf("[%d]  | ",i);
+            for(int j = 0; j <= (Hist[i]%20); j++)
+            printf("*");
+            printf("-->(%d)",Hist[i]);
+            printf("\t\t\t\t\t\t\t   ||Equalized value {%d}",histogram[i]);
+            printf("\n");
+        }
+        else if(i < 256)
+        {
+            printf("[%d] | ",i);
+            for(int j = 0; j <= (Hist[i]%20); j++)
+            printf("*");
+            printf("-->(%d)",Hist[i]);
+            printf("\t\t\t\t\t\t\t   ||Equalized value {%d}",histogram[i]);
+            printf("\n");
+        }
     }
 
 
-
-
-
-    //float G[m_height][m_width];
-
-
-
-    for(int y=1; y<m_height-1; ++y)
-    {
-        for(int x=1; x<m_width-1; ++x)
-        {
-            float result = (Gy[y][x]/Gx[y][x]);
-            result=atan(result);
-            Gx[y][x]=(result*180)/3.1415;
-
-            if(Gx[y][x] < 0)
-            {
-                Gx[y][x]=180+Gx[y][x];
-            }
-
-
-
-        }
-
-    }
-
-    for(int y=90; y<100-1; ++y)
-    {
-        for(int x=90; x<100-1; ++x)
-        {
-            cout<<Gx[y][x]<<" "<<endl;
-
-
-        }
-
-    }
-
-    for(int y=1; y<m_height-1; ++y)
-    {
-        for(int x=1; x<m_width-1; ++x)
-        {
-            if(Gx[y][x]<20 || Gx[y][x]>120)
-            {
-                m_colors[y*m_width+x].r=255;
-                m_colors[y*m_width+x].g=0;
-                m_colors[y*m_width+x].b=0;
-            }
-
-
-
-
-        }
-
-    }
-
-
-
-
-    cout<<"---Angle---"<<endl;
 }
-
 
 
 void Image :: Export(const char* path)const
@@ -1072,7 +1145,6 @@ void Image :: Export(const char* path)const
     infoHeader[37]=0;
     infoHeader[38]=0;
     infoHeader[39]=0;
-//cout<<"infoHeader : "<<infoHeader<<endl;
 
     f.write(reinterpret_cast<char*>(fileHeader),fileHeaderSize);
     f.write(reinterpret_cast<char*>(infoHeader),infoHeaderSize);
@@ -1097,82 +1169,6 @@ void Image :: Export(const char* path)const
 
 }
 
-void Image :: Histogram()
-{
-    for(int y=0; y<m_height; ++y)
-    {
-        for(int x=0; x<m_width; ++x)
-        {
-            float r=0,g=0,b=0;
-
-            r=m_colors[y*m_width+x].r;
-            g=m_colors[y*m_width+x].g;
-            b=m_colors[y*m_width+x].b;
-
-            int avg=0;
-            avg=(r+g+b)/3;
-
-            m_colors[y*m_width+x].r=avg;
-            m_colors[y*m_width+x].g=avg;
-            m_colors[y*m_width+x].b=avg;
-        }
-
-    }
-
-    int Hist[256]= {0};
-
-    for(int y=0; y<m_height; ++y)
-    {
-        for(int x=0; x<m_width; ++x)
-        {
-            int val=0;
-            val=m_colors[y*m_width+x].r;
-            Hist[val]+=1;
-        }
-    }
-
-
-    long long int cdf[256]= {0};
-    cdf[0]=Hist[0];
-
-    for(int i=1; i<256; ++i)
-    {
-
-
-        cdf[i]=cdf[i-1]+Hist[i];
-
-    }
-
-
-    int cdfMin;
-    cdfMin=cdf[0];
-    for(int i=1; i<256; ++i)
-    {
-        if(cdf[i]<cdfMin)
-            cdfMin=cdf[i];
-    }
-
-
-    int h[256]= {0};
-
-    for(int i=0; i<256; ++i)
-    {
-        h[i]=round((cdf[i]-cdfMin)*255)/((m_height*m_width)-cdfMin);
-
-    }
-
-    for(int i=0; i<256; ++i)
-    {
-
-
-        cout<<h[i]<<" ";
-
-    }
-
-    cout<<endl;
-    cout<<"---Histogram---";
-
-}
 
 
 void printManu()
