@@ -86,11 +86,13 @@ void Image::SetColor(const Color& color, int x,int y)
     m_colors[y*m_width+x].b=color.b;
 }
 
+Image readImage(0,0);
+
 void Image::Read()
 {
 
-   // const char* path;
-   string path;
+    // const char* path;
+    string path;
     cout<<"Enter Image Path : ";
     cin>>path;
 
@@ -129,21 +131,21 @@ void Image::Read()
         for(int x=0; x<m_width; ++x)
         {
             unsigned char color[3];
-            f.read(reinterpret_cast<char*>(color),3);
-            /*//original operation
-            m_colors[y*m_width+x].r=static_cast<float>(color[2]);///255.0f;
-            m_colors[y*m_width+x].g=static_cast<float>(color[1]);///255.0f;
-            m_colors[y*m_width+x].b=static_cast<float>(color[0]);///255.0f; */
 
-            m_colors[y*m_width+x].r=static_cast<float>(color[2]);///255.0f;
-            m_colors[y*m_width+x].g=static_cast<float>(color[1]);///255.0f;
-            m_colors[y*m_width+x].b=static_cast<float>(color[0]);///255.0f;
+            f.read(reinterpret_cast<char*>(color),3);
+
+            m_colors[y*m_width+x].r=static_cast<float>(color[2]);
+            m_colors[y*m_width+x].g=static_cast<float>(color[1]);
+            m_colors[y*m_width+x].b=static_cast<float>(color[0]);
 
         }
         f.ignore(paddingAmount);
     }
     f.close();
-    cout<<"File read"<<endl;
+
+    cout<<"\n\n\n"<<endl;
+    cout<<"\t\t\t!!----Image Reading Complete---!!"<<endl;
+
 
 }
 
@@ -168,7 +170,13 @@ void Image :: Negative()
 
     }
 
-    cout<<"Negative done!"<<endl;
+    cout<<"\n"<<endl;
+    cout<<"\t\t\t!!----Image Negative Complete---!!"<<endl;
+    cout<<"\n"<<endl;
+
+    cout<<"\tCreating Negative Image......"<<endl;
+    cout<<"\tNegative Image Created named \"NegativeImage.bmp\"......"<<endl;
+    readImage.Export("NegativeImage.bmp");
 
 }
 
@@ -194,7 +202,15 @@ void Image :: Grayscale()
 
     }
 
-    cout<<"Grayscale done!"<<endl;
+
+    cout<<"\n"<<endl;
+    cout<<"\t\t\t!!----Image Grayscale Complete---!!"<<endl;
+    cout<<"\n"<<endl;
+
+    cout<<"\tCreating Grayscale Image......"<<endl;
+    cout<<"\tGrayscale Image Created named \"GrayscaleImage.bmp\"......"<<endl;
+    readImage.Export("GrayscaleImage.bmp");
+
 
 }
 
@@ -235,7 +251,15 @@ void Image :: Brightening()
     }
 
 
-    cout<<"Brightening done!"<<endl;
+
+    cout<<"\n"<<endl;
+    cout<<"\t\t\t!!----Image Brightening Complete---!!"<<endl;
+    cout<<"\n"<<endl;
+
+    cout<<"\tCreating Brightening Image......"<<endl;
+    cout<<"\tBrightening Image Created named \"BrighteningImage.bmp\"......"<<endl;
+    readImage.Export("BrighteningImage.bmp");
+
 }
 
 void Image :: Flip()
@@ -320,7 +344,6 @@ void Image :: Flip()
 }
 
 
-
 void Image::Smoothing()
 {
 
@@ -364,7 +387,15 @@ void Image::Smoothing()
 
     }
 
-    cout<<"Smoothing Complete!"<<endl;
+
+    cout<<"\n"<<endl;
+    cout<<"\t\t\t!!----Image Smoothing Complete---!!"<<endl;
+    cout<<"\n"<<endl;
+
+    cout<<"\tCreating Smooth Image......"<<endl;
+    cout<<"\tSmooth Image Created named \"SmoothImage.bmp\"......"<<endl;
+    readImage.Export("SmoothImage.bmp");
+
 }
 
 void Image::Sharpen()
@@ -446,7 +477,13 @@ void Image::Sharpen()
 
     }
 
-    cout<<"Sharpen Complete!"<<endl;
+    cout<<"\n"<<endl;
+    cout<<"\t\t\t!!----Image Sharpen Complete---!!"<<endl;
+    cout<<"\n"<<endl;
+
+    cout<<"\tCreating Sharpen Image......"<<endl;
+    cout<<"\tSharpen Image Created named \"SharpenImage.bmp\"......"<<endl;
+    readImage.Export("SharpenImage.bmp");
 }
 
 void Image::Box_Blur()
@@ -491,14 +528,38 @@ void Image::Box_Blur()
 
     }
 
-    cout<<"Box Blur!"<<endl;
+
+
+    cout<<"\n"<<endl;
+    cout<<"\t\t\t!!----Box Blur Complete---!!"<<endl;
+    cout<<"\n"<<endl;
+
+    cout<<"\tCreating Blur Image......"<<endl;
+    cout<<"\tBlur Image Created named \"BlurImage.bmp\"......"<<endl;
+    readImage.Export("BlurImage.bmp");
 }
 
 
 void Image::Gaussian_Blur()
 {
 
+    cout<<"\t\t\t\t!!----------Gaussian Blur----------!!"<<endl;
+
+    cout<<"1-> (3 × 3) Gaussian Blur"<<endl;
+    cout<<"2-> (5 × 5) Gaussian Blur"<<endl;
+
+
+    int choice;
+
+    cout<<endl;
+    cout<<"Enter Choice : ";
+    cin>>choice;
+
     //  float filter[3][3]={{-1,-2,-1},{0,0,0},{1,2,1}};
+
+    if(choice == 1)
+    {
+
 
     int filter[3][3]= {{1,2,1},{2,4,2},{1,2,1}};
 
@@ -534,14 +595,11 @@ void Image::Gaussian_Blur()
 
     }
 
-    cout<<"Gaussian Blur!"<<endl;
-}
+    }
+    else if(choice ==2 )
+    {
 
-void Image::Gaussian_Blur5_5()
-{
-
-
-    int filter[5][5]=
+         int filter[5][5]=
     {
         {1,4,6,4,1},
         {4,16,24,16,4},
@@ -591,19 +649,33 @@ void Image::Gaussian_Blur5_5()
             m_colors[y*m_width+x].b=b;
         }
 
+    }else
+    {
+        cout<<"Invalid Input!!"<<endl;
+        cout<<"\tTry Again."<<endl;
     }
 
-    cout<<"Gaussian Blur(5*5)!"<<endl;
+
+    cout<<"\n"<<endl;
+    cout<<"\t\t\t!!----Gaussian Blur Complete---!!"<<endl;
+    cout<<"\n"<<endl;
+
+    cout<<"\tCreating Blur Image......"<<endl;
+    cout<<"\tBlur Image Created named \"GaussianBlurImage.bmp\"......"<<endl;
+    readImage.Export("GaussianBlurImage.bmp");
 }
+
+
+
 
 void Image:: SobelEdgeDetection()
 {
-    float gx[3][3] = {{-1,0,1},
+    int gx[3][3] = {{-1,0,1},
         {-2,0,2},
         {-1,0,1}
     };
 
-    float gy[3][3] = {{1,2,1},
+    int gy[3][3] = {{1,2,1},
         {0,0,0},
         {-1,-2,-1}
     };
@@ -612,39 +684,39 @@ void Image:: SobelEdgeDetection()
     {
         for(int x=1; x<m_width-1; ++x)
         {
-            float rx=0,gx=0,bx=0;
+            float Rx=0,Gx=0,Bx=0;
 
 
-            rx+=m_colors[(y-1)*m_width+(x-1)].r*gx[0][0]+m_colors[(y-1)*m_width+(x)].r*gx[0][1]+m_colors[(y-1)*m_width+(x+1)].r*gx[0][2];
-            gx+=m_colors[(y-1)*m_width+(x-1)].g*gx[0][0]+m_colors[(y-1)*m_width+(x)].g*gx[0][1]+m_colors[(y-1)*m_width+(x+1)].g*gx[0][2];
-            bx+=m_colors[(y-1)*m_width+(x-1)].b*gx[0][0]+m_colors[(y-1)*m_width+(x)].b*gx[0][1]+m_colors[(y-1)*m_width+(x+1)].b*gx[0][2];
+            Rx+=m_colors[(y-1)*m_width+(x-1)].r*gx[0][0]+m_colors[(y-1)*m_width+(x)].r*gx[0][1]+m_colors[(y-1)*m_width+(x+1)].r*gx[0][2];
+            Gx+=m_colors[(y-1)*m_width+(x-1)].g*gx[0][0]+m_colors[(y-1)*m_width+(x)].g*gx[0][1]+m_colors[(y-1)*m_width+(x+1)].g*gx[0][2];
+            Bx+=m_colors[(y-1)*m_width+(x-1)].b*gx[0][0]+m_colors[(y-1)*m_width+(x)].b*gx[0][1]+m_colors[(y-1)*m_width+(x+1)].b*gx[0][2];
 
-            rx+=m_colors[(y)*m_width+(x-1)].r*gx[1][0]+m_colors[(y)*m_width+(x)].r*gx[1][1]+m_colors[(y)*m_width+(x+1)].r*gx[1][2];
-            gx+=m_colors[(y)*m_width+(x-1)].g*gx[1][0]+m_colors[(y)*m_width+(x)].g*gx[1][1]+m_colors[(y)*m_width+(x+1)].g*gx[1][2];
-            bx+=m_colors[(y)*m_width+(x-1)].b*gx[1][0]+m_colors[(y)*m_width+(x)].b*gx[1][1]+m_colors[(y)*m_width+(x+1)].b*gx[1][2];
+            Rx+=m_colors[(y)*m_width+(x-1)].r*gx[1][0]+m_colors[(y)*m_width+(x)].r*gx[1][1]+m_colors[(y)*m_width+(x+1)].r*gx[1][2];
+            Gx+=m_colors[(y)*m_width+(x-1)].g*gx[1][0]+m_colors[(y)*m_width+(x)].g*gx[1][1]+m_colors[(y)*m_width+(x+1)].g*gx[1][2];
+            Bx+=m_colors[(y)*m_width+(x-1)].b*gx[1][0]+m_colors[(y)*m_width+(x)].b*gx[1][1]+m_colors[(y)*m_width+(x+1)].b*gx[1][2];
 
-            rx+=m_colors[(y+1)*m_width+(x-1)].r*gx[2][0]+m_colors[(y+1)*m_width+(x)].r*gx[2][1]+m_colors[(y+1)*m_width+(x+1)].r*gx[2][2];
-            gx+=m_colors[(y+1)*m_width+(x-1)].g*gx[2][0]+m_colors[(y+1)*m_width+(x)].g*gx[2][1]+m_colors[(y+1)*m_width+(x+1)].g*gx[2][2];
-            bx+=m_colors[(y+1)*m_width+(x-1)].b*gx[2][0]+m_colors[(y+1)*m_width+(x)].b*gx[2][1]+m_colors[(y+1)*m_width+(x+1)].b*gx[2][2];
+            Rx+=m_colors[(y+1)*m_width+(x-1)].r*gx[2][0]+m_colors[(y+1)*m_width+(x)].r*gx[2][1]+m_colors[(y+1)*m_width+(x+1)].r*gx[2][2];
+            Gx+=m_colors[(y+1)*m_width+(x-1)].g*gx[2][0]+m_colors[(y+1)*m_width+(x)].g*gx[2][1]+m_colors[(y+1)*m_width+(x+1)].g*gx[2][2];
+            Bx+=m_colors[(y+1)*m_width+(x-1)].b*gx[2][0]+m_colors[(y+1)*m_width+(x)].b*gx[2][1]+m_colors[(y+1)*m_width+(x+1)].b*gx[2][2];
 
-            double ry=0,gy=0,by=0;
+            double Ry=0,Gy=0,By=0;
 
-            ry+=m_colors[(y-1)*m_width+(x-1)].r*gy[0][0]+m_colors[(y-1)*m_width+(x)].r*gy[0][1]+m_colors[(y-1)*m_width+(x+1)].r*gy[0][2];
-            gy+=m_colors[(y-1)*m_width+(x-1)].g*gy[0][0]+m_colors[(y-1)*m_width+(x)].g*gy[0][1]+m_colors[(y-1)*m_width+(x+1)].g*gy[0][2];
-            by+=m_colors[(y-1)*m_width+(x-1)].b*gy[0][0]+m_colors[(y-1)*m_width+(x)].b*gy[0][1]+m_colors[(y-1)*m_width+(x+1)].b*gy[0][2];
+            Ry+=m_colors[(y-1)*m_width+(x-1)].r*gy[0][0]+m_colors[(y-1)*m_width+(x)].r*gy[0][1]+m_colors[(y-1)*m_width+(x+1)].r*gy[0][2];
+            Gy+=m_colors[(y-1)*m_width+(x-1)].g*gy[0][0]+m_colors[(y-1)*m_width+(x)].g*gy[0][1]+m_colors[(y-1)*m_width+(x+1)].g*gy[0][2];
+            By+=m_colors[(y-1)*m_width+(x-1)].b*gy[0][0]+m_colors[(y-1)*m_width+(x)].b*gy[0][1]+m_colors[(y-1)*m_width+(x+1)].b*gy[0][2];
 
-            ry+=m_colors[(y)*m_width+(x-1)].r*gy[1][0]+m_colors[(y)*m_width+(x)].r*gy[1][1]+m_colors[(y)*m_width+(x+1)].r*gy[1][2];
-            gy+=m_colors[(y)*m_width+(x-1)].g*gy[1][0]+m_colors[(y)*m_width+(x)].g*gy[1][1]+m_colors[(y)*m_width+(x+1)].g*gy[1][2];
-            by+=m_colors[(y)*m_width+(x-1)].b*gy[1][0]+m_colors[(y)*m_width+(x)].b*gy[1][1]+m_colors[(y)*m_width+(x+1)].b*gy[1][2];
+            Ry+=m_colors[(y)*m_width+(x-1)].r*gy[1][0]+m_colors[(y)*m_width+(x)].r*gy[1][1]+m_colors[(y)*m_width+(x+1)].r*gy[1][2];
+            Gy+=m_colors[(y)*m_width+(x-1)].g*gy[1][0]+m_colors[(y)*m_width+(x)].g*gy[1][1]+m_colors[(y)*m_width+(x+1)].g*gy[1][2];
+            By+=m_colors[(y)*m_width+(x-1)].b*gy[1][0]+m_colors[(y)*m_width+(x)].b*gy[1][1]+m_colors[(y)*m_width+(x+1)].b*gy[1][2];
 
-            ry+=m_colors[(y+1)*m_width+(x-1)].r*gy[2][0]+m_colors[(y+1)*m_width+(x)].r*gy[2][1]+m_colors[(y+1)*m_width+(x+1)].r*gy[2][2];
-            gy+=m_colors[(y+1)*m_width+(x-1)].g*gy[2][0]+m_colors[(y+1)*m_width+(x)].g*gy[2][1]+m_colors[(y+1)*m_width+(x+1)].g*gy[2][2];
-            by+=m_colors[(y+1)*m_width+(x-1)].b*gy[2][0]+m_colors[(y+1)*m_width+(x)].b*gy[2][1]+m_colors[(y+1)*m_width+(x+1)].b*gy[2][2];
+            Ry+=m_colors[(y+1)*m_width+(x-1)].r*gy[2][0]+m_colors[(y+1)*m_width+(x)].r*gy[2][1]+m_colors[(y+1)*m_width+(x+1)].r*gy[2][2];
+            Gy+=m_colors[(y+1)*m_width+(x-1)].g*gy[2][0]+m_colors[(y+1)*m_width+(x)].g*gy[2][1]+m_colors[(y+1)*m_width+(x+1)].g*gy[2][2];
+            By+=m_colors[(y+1)*m_width+(x-1)].b*gy[2][0]+m_colors[(y+1)*m_width+(x)].b*gy[2][1]+m_colors[(y+1)*m_width+(x+1)].b*gy[2][2];
 
 
-            double sqrtBlue = (double)(sqrt(bx*bx + by*by));
-            double sqrtGreen = (double)(sqrt(gx*gx+ gy*gy));
-            double sqrtRed = (double)(sqrt(rx*rx + ry*ry));
+            double sqrtBlue = (double)(sqrt(Bx*Bx + By*By));
+            double sqrtGreen = (double)(sqrt(Gx*Gx+ Gy*Gy));
+            double sqrtRed = (double)(sqrt(Rx*Rx + Ry*Ry));
 
 
             if(sqrtBlue > 127)
@@ -670,7 +742,10 @@ void Image:: SobelEdgeDetection()
 
     }
 
+    cout<<"---Sobel---"<<endl;
+
 }
+
 
 void Image::Angle_Calculation()
 {
@@ -1078,7 +1153,8 @@ void printManu()
     cout<<"6->Gaussian Blur"<<endl;
     cout<<"7->Angle Calculation"<<endl;
     // cout<<"8->Histogram"<<endl;
-    cout<<"9->Export"<<endl;
+    cout<<"9->Sobel Edge Detection"<<endl;
+    cout<<"10->Export"<<endl;
 
 }
 
@@ -1090,59 +1166,69 @@ int main()
 
 
 
-    int choice;
-    cout<<endl<<endl;;
-    cout<<"choice : ";
-    cin>>choice;
 
     Image readImage(0,0);
 
-    cout<<"     Reading Image....."<<endl<<endl;
-
-    readImage.Read();
 
 
 
-    switch(choice)
+    bool flag;
+    flag=true;
+
+
+    while(flag)
     {
-    case 1:
-        break;
 
-    case 2:
-        readImage.Negative();
-        break;
+        int choice;
+        cout<<endl;;
+        cout<<"choice : ";
+        cin>>choice;
 
-    case 3:
-        readImage.Grayscale();
-        break;
 
-    case 4:
-        readImage.Brightening();
-        break;
+        switch(choice)
+        {
+        case 1:
+            readImage.Read();
+            break;
 
-    case 5:
-        //readImage.Box_Blur();
-        readImage.Flip();
-        break;
+        case 2:
+            readImage.Negative();
+            break;
 
-    case 6:
-        // readImage.Gaussian_Blur5_5();
-        readImage.SobelEdgeDetection();
-        break;
+        case 3:
+            readImage.Grayscale();
+            break;
 
-    case 7:
-        readImage.Sharpen();
-        break;
+        case 4:
+            readImage.Brightening();
+            break;
 
-    case 8:
-        //readImage.SobelEdgeDetection();
-        break;
+        case 5:
+            //readImage.Box_Blur();
+            readImage.Flip();
+            break;
 
-    case 9:
-        break;
+        case 6:
+          readImage.Gaussian_Blur5_5();
+          break;
 
-    case 10:
-        break;
+        case 7:
+            readImage.Sharpen();
+            break;
+
+        case 8:
+            //readImage.SobelEdgeDetection();
+            break;
+
+        case 9:
+            readImage.SobelEdgeDetection();
+            break;
+
+        case 10:
+            flag=false;
+            break;
+
+        }
 
     }
 
