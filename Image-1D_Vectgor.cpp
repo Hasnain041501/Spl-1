@@ -18,28 +18,28 @@ struct Color
 class Image
 {
 public:
+
     Image(int width,int height);
     ~Image();
 
     Color GetColor(int x, int y)const;
     void SetColor(const Color& color, int x,int y);
-    void Read(const char* path);
+    void Read();
     void printManu();
-    void valueTest();
     void Negative();
     void Grayscale();
     void Brightening();
     void Flip();
     void Sharpen();
     void Smoothing();
-    void Convolution();
     void Box_Blur();
     void Gaussian_Blur();
     void Gaussian_Blur5_5();
     void SobelEdgeDetection();
     void Angle_Calculation();
-    void Export(const char* path)const;
     void Histogram();
+    void Export(const char* path)const;
+
 private:
     int m_width;
     int m_height;
@@ -86,11 +86,17 @@ void Image::SetColor(const Color& color, int x,int y)
     m_colors[y*m_width+x].b=color.b;
 }
 
-void Image::Read(const char* path)
+void Image::Read()
 {
+
+   // const char* path;
+   string path;
+    cout<<"Enter Image Path : ";
+    cin>>path;
+
+
     ifstream f;
     f.open(path,std::ios::in | std::ios::binary);
-//    f.open(path,std::ios::in);
 
 
     if(!f.is_open())
@@ -141,26 +147,6 @@ void Image::Read(const char* path)
 
 }
 
-void Image :: valueTest()
-{
-    ////
-
-    cout<<m_height<<endl;
-    cout<<m_width<<endl;
-//cout<<paddingAmount<<endl;
-
-    for(int y=m_height/300; y<(m_height/300)+10; ++y)
-    {
-        for(int x=m_width/100; x<(m_width/100)+10; ++x)
-        {
-            Color b = m_colors[y*m_height+x];
-            cout<<b.r<<" "<<b.g<<" "<<b.b<<endl;
-
-        }
-
-    }
-    ////
-}
 
 void Image :: Negative()
 {
@@ -227,24 +213,24 @@ void Image :: Brightening()
     }
     else
     {
-         for(int y = 0; y < m_height; y++)
+        for(int y = 0; y < m_height; y++)
         {
-           for(int x = 0; x < m_width; x++)
-           {
-              double r=0,g=0,b=0;
+            for(int x = 0; x < m_width; x++)
+            {
+                double r=0,g=0,b=0;
 
-            r=m_colors[y*m_width+x].r;
-            r = r + min(level, (255 - r));
-            m_colors[y*m_width+x].r=max(0.0, r);
+                r=m_colors[y*m_width+x].r;
+                r = r + min(level, (255 - r));
+                m_colors[y*m_width+x].r=max(0.0, r);
 
-            g=m_colors[y*m_width+x].g;
-            g = g + min(level, (255 - g));
-            m_colors[y*m_width+x].g=max(0.0, g);
+                g=m_colors[y*m_width+x].g;
+                g = g + min(level, (255 - g));
+                m_colors[y*m_width+x].g=max(0.0, g);
 
-            b=m_colors[y*m_width+x].b;
-            b = b + min(level, (255 - b));
-            m_colors[y*m_width+x].b=max(0.0, b);
-           }
+                b=m_colors[y*m_width+x].b;
+                b = b + min(level, (255 - b));
+                m_colors[y*m_width+x].b=max(0.0, b);
+            }
         }
     }
 
@@ -254,53 +240,53 @@ void Image :: Brightening()
 
 void Image :: Flip()
 {
-  /*  vector<vector<Color>> M_colors;
+    /*  vector<vector<Color>> M_colors;
 
-     for (int x = 0; x< m_height; ++x)
-    {
-        for (int y = 0; y< m_width; ++y)
-        {
-            M_colors[x][y].r=m_colors[x*m_width+y].r;
-            M_colors[x][y].g=m_colors[x*m_width+y].g;
-            M_colors[x][y].b=m_colors[x*m_width+y].b;
+       for (int x = 0; x< m_height; ++x)
+      {
+          for (int y = 0; y< m_width; ++y)
+          {
+              M_colors[x][y].r=m_colors[x*m_width+y].r;
+              M_colors[x][y].g=m_colors[x*m_width+y].g;
+              M_colors[x][y].b=m_colors[x*m_width+y].b;
 
-        }
-    }
+          }
+      }
 
-     for (int x = 0; x< m_height; ++x)
-    {
-        for (int y = 0; y< m_width/2; ++y)
-        {
-            float  red=0,green=0,blue=0;
-
-
-            red=M_colors[x][m_width-1-y].r;
-            M_colors[x][m_width-1-y].r=M_colors[x][y].r;
-            M_colors[x][y].r=red;
-
-            green=M_colors[x][m_width-1-y].g;
-            M_colors[x][m_width-1-y].g=M_colors[x][y].g;
-            M_colors[x][y].g=green;
-
-            blue=M_colors[x][m_width-1-y].b;
-            M_colors[x][m_width-1-y].b=M_colors[x][y].b;
-            M_colors[x][y].b=blue;
+       for (int x = 0; x< m_height; ++x)
+      {
+          for (int y = 0; y< m_width/2; ++y)
+          {
+              float  red=0,green=0,blue=0;
 
 
-        }
+              red=M_colors[x][m_width-1-y].r;
+              M_colors[x][m_width-1-y].r=M_colors[x][y].r;
+              M_colors[x][y].r=red;
 
-    }
+              green=M_colors[x][m_width-1-y].g;
+              M_colors[x][m_width-1-y].g=M_colors[x][y].g;
+              M_colors[x][y].g=green;
 
-    for (int x = 0; x< m_height; ++x)
-    {
-        for (int y = 0; y< m_width; ++y)
-        {
-            m_colors[x*m_width+y].r=M_colors[x][y].r;
-            m_colors[x*m_width+y].g=M_colors[x][y].g;
-            m_colors[x*m_width+y].b=M_colors[x][y].b;
+              blue=M_colors[x][m_width-1-y].b;
+              M_colors[x][m_width-1-y].b=M_colors[x][y].b;
+              M_colors[x][y].b=blue;
 
-        }
-    } */
+
+          }
+
+      }
+
+      for (int x = 0; x< m_height; ++x)
+      {
+          for (int y = 0; y< m_width; ++y)
+          {
+              m_colors[x*m_width+y].r=M_colors[x][y].r;
+              m_colors[x*m_width+y].g=M_colors[x][y].g;
+              m_colors[x*m_width+y].b=M_colors[x][y].b;
+
+          }
+      } */
     for (int y = 0; y< m_height; ++y)
     {
         for (int x = 0; x < m_width/2; ++x)
@@ -334,61 +320,17 @@ void Image :: Flip()
 }
 
 
-void Image::Convolution()
-{
-    //Convolusion
-
-    float filter[3][3]= {{1,0,-1},{2,0,-2},{1,0,-1}};
-
-    //  int filter[3][3]={{1,2,1},{2,4,2},{1,2,1}};
-
-
-
-    for(int y=1; y<m_height-1; ++y)
-    {
-        for(int x=1; x<m_width-1; ++x)
-        {
-            float r=0,g=0,b=0;
-
-            r+=m_colors[(y-1)*m_width+(x-1)].r*filter[0][0]+m_colors[(y-1)*m_width+(x)].r*filter[0][1]+m_colors[(y-1)*m_width+(x+1)].r*filter[0][2];
-            g+=m_colors[(y-1)*m_width+(x-1)].g*filter[0][0]+m_colors[(y-1)*m_width+(x)].g*filter[0][1]+m_colors[(y-1)*m_width+(x+1)].g*filter[0][2];
-            b+=m_colors[(y-1)*m_width+(x-1)].b*filter[0][0]+m_colors[(y-1)*m_width+(x)].b*filter[0][1]+m_colors[(y-1)*m_width+(x+1)].b*filter[0][2];
-
-            r+=m_colors[(y)*m_width+(x-1)].r*filter[1][0]+m_colors[(y)*m_width+(x)].r*filter[1][1]+m_colors[(y)*m_width+(x+1)].r*filter[1][2];
-            g+=m_colors[(y)*m_width+(x-1)].g*filter[1][0]+m_colors[(y)*m_width+(x)].g*filter[1][1]+m_colors[(y)*m_width+(x+1)].g*filter[1][2];
-            b+=m_colors[(y)*m_width+(x-1)].b*filter[1][0]+m_colors[(y)*m_width+(x)].b*filter[1][1]+m_colors[(y)*m_width+(x+1)].b*filter[1][2];
-
-            r+=m_colors[(y+1)*m_width+(x-1)].r*filter[2][0]+m_colors[(y+1)*m_width+(x)].r*filter[2][1]+m_colors[(y+1)*m_width+(x+1)].r*filter[2][2];
-            g+=m_colors[(y+1)*m_width+(x-1)].g*filter[2][0]+m_colors[(y+1)*m_width+(x)].g*filter[2][1]+m_colors[(y+1)*m_width+(x+1)].g*filter[2][2];
-            b+=m_colors[(y+1)*m_width+(x-1)].b*filter[2][0]+m_colors[(y+1)*m_width+(x)].b*filter[2][1]+m_colors[(y+1)*m_width+(x+1)].b*filter[2][2];
-
-            r/=9;
-            g/=9;
-            b/=9;
-
-            /* (r>150)? r=255 : r=0;
-             (g>150)? g=255 : g=0;
-             (b>150)? b=255 : b=0; */
-
-            m_colors[y*m_width+x].r=r;
-            m_colors[y*m_width+x].g=g;
-            m_colors[y*m_width+x].b=b;
-        }
-
-    }
-
-    cout<<"Convolution Complete!"<<endl;
-}
 
 void Image::Smoothing()
 {
 
 
-    float filter[3][3]= {
-                        {1,1,1},
-                        {1,1,1},
-                        {1,1,1}
-                        };
+    float filter[3][3]=
+    {
+        {1,1,1},
+        {1,1,1},
+        {1,1,1}
+    };
 
 
 
@@ -427,12 +369,13 @@ void Image::Smoothing()
 
 void Image::Sharpen()
 {
-    int kernel[4][9] = {
-                      {0, 1, 0, 1, -4 , 1, 0, 1 , 0},
-                      {0, -1, 0, -1, 4, -1, 0, -1, 0},
-                      {1, 1, 1, 1 , -8, 1, 1, 1, 1},
-                      {-1, -1, -1, -1, 8, -1, -1, -1, -1},
-                    };
+    int kernel[4][9] =
+    {
+        {0, 1, 0, 1, -4, 1, 0, 1, 0},
+        {0, -1, 0, -1, 4, -1, 0, -1, 0},
+        {1, 1, 1, 1, -8, 1, 1, 1, 1},
+        {-1, -1, -1, -1, 8, -1, -1, -1, -1},
+    };
 
     cout<<"\n\nChoose Filter : "<<endl;
     cout<<"\n1 -> Laplacian filter.\n";
@@ -461,7 +404,7 @@ void Image::Sharpen()
 
     // float filter[3][3]= {{-1,-1,-1},{-1,9,-1},{-1,-1,-1}};
 
-  //  float filter[3][3]= {{0,-1,0},{-1,5,-1},{0,-1,0}};
+    //  float filter[3][3]= {{0,-1,0},{-1,5,-1},{0,-1,0}};
 
     //  int filter[3][3]={{1,2,1},{2,4,2},{1,2,1}};
 
@@ -598,13 +541,14 @@ void Image::Gaussian_Blur5_5()
 {
 
 
-    int filter[5][5]= {
-                    {1,4,6,4,1},
-                    {4,16,24,16,4},
-                    {6,24,36,24,6},
-                    {4,16,24,16,4},
-                    {1,4,6,4,1},
-                    };
+    int filter[5][5]=
+    {
+        {1,4,6,4,1},
+        {4,16,24,16,4},
+        {6,24,36,24,6},
+        {4,16,24,16,4},
+        {1,4,6,4,1},
+    };
 
 
 
@@ -622,14 +566,14 @@ void Image::Gaussian_Blur5_5()
             g+=m_colors[(y-1)*m_width+(x-2)].g*filter[1][0]+m_colors[(y-1)*m_width+(x-1)].g*filter[1][1]+m_colors[(y-1)*m_width+(x)].g*filter[1][2]+m_colors[(y-1)*m_width+(x+1)].g*filter[1][3]+m_colors[(y-1)*m_width+(x+2)].g*filter[1][4];
             b+=m_colors[(y-1)*m_width+(x-2)].b*filter[1][0]+m_colors[(y-1)*m_width+(x-1)].b*filter[1][1]+m_colors[(y-1)*m_width+(x)].b*filter[1][2]+m_colors[(y-1)*m_width+(x+1)].b*filter[1][3]+m_colors[(y-1)*m_width+(x+2)].b*filter[1][4];
 
-           r+=m_colors[(y)*m_width+(x-2)].r*filter[2][0]+m_colors[(y)*m_width+(x-1)].r*filter[2][1]+m_colors[(y)*m_width+(x)].r*filter[2][2]+m_colors[(y)*m_width+(x+1)].r*filter[2][3]+m_colors[(y)*m_width+(x+2)].r*filter[2][4];
-           g+=m_colors[(y)*m_width+(x-2)].g*filter[2][0]+m_colors[(y)*m_width+(x-1)].g*filter[2][1]+m_colors[(y)*m_width+(x)].g*filter[2][2]+m_colors[(y)*m_width+(x+1)].g*filter[2][3]+m_colors[(y)*m_width+(x+2)].g*filter[2][4];
-           b+=m_colors[(y)*m_width+(x-2)].b*filter[2][0]+m_colors[(y)*m_width+(x-1)].b*filter[2][1]+m_colors[(y)*m_width+(x)].b*filter[2][2]+m_colors[(y)*m_width+(x+1)].b*filter[2][3]+m_colors[(y)*m_width+(x+2)].b*filter[2][4];
+            r+=m_colors[(y)*m_width+(x-2)].r*filter[2][0]+m_colors[(y)*m_width+(x-1)].r*filter[2][1]+m_colors[(y)*m_width+(x)].r*filter[2][2]+m_colors[(y)*m_width+(x+1)].r*filter[2][3]+m_colors[(y)*m_width+(x+2)].r*filter[2][4];
+            g+=m_colors[(y)*m_width+(x-2)].g*filter[2][0]+m_colors[(y)*m_width+(x-1)].g*filter[2][1]+m_colors[(y)*m_width+(x)].g*filter[2][2]+m_colors[(y)*m_width+(x+1)].g*filter[2][3]+m_colors[(y)*m_width+(x+2)].g*filter[2][4];
+            b+=m_colors[(y)*m_width+(x-2)].b*filter[2][0]+m_colors[(y)*m_width+(x-1)].b*filter[2][1]+m_colors[(y)*m_width+(x)].b*filter[2][2]+m_colors[(y)*m_width+(x+1)].b*filter[2][3]+m_colors[(y)*m_width+(x+2)].b*filter[2][4];
 
 
-           r+=m_colors[(y+1)*m_width+(x-2)].r*filter[3][0]+m_colors[(y+1)*m_width+(x-1)].r*filter[3][1]+m_colors[(y+1)*m_width+(x)].r*filter[3][2]+m_colors[(y+1)*m_width+(x+1)].r*filter[3][3]+m_colors[(y+1)*m_width+(x+2)].r*filter[3][4];
-           g+=m_colors[(y+1)*m_width+(x-2)].g*filter[3][0]+m_colors[(y+1)*m_width+(x-1)].g*filter[3][1]+m_colors[(y+1)*m_width+(x)].g*filter[3][2]+m_colors[(y+1)*m_width+(x+1)].g*filter[3][3]+m_colors[(y+1)*m_width+(x+2)].g*filter[3][4];
-           b+=m_colors[(y+1)*m_width+(x-2)].b*filter[3][0]+m_colors[(y+1)*m_width+(x-1)].b*filter[3][1]+m_colors[(y+1)*m_width+(x)].b*filter[3][2]+m_colors[(y+1)*m_width+(x+1)].b*filter[3][3]+m_colors[(y+1)*m_width+(x+2)].b*filter[3][4];
+            r+=m_colors[(y+1)*m_width+(x-2)].r*filter[3][0]+m_colors[(y+1)*m_width+(x-1)].r*filter[3][1]+m_colors[(y+1)*m_width+(x)].r*filter[3][2]+m_colors[(y+1)*m_width+(x+1)].r*filter[3][3]+m_colors[(y+1)*m_width+(x+2)].r*filter[3][4];
+            g+=m_colors[(y+1)*m_width+(x-2)].g*filter[3][0]+m_colors[(y+1)*m_width+(x-1)].g*filter[3][1]+m_colors[(y+1)*m_width+(x)].g*filter[3][2]+m_colors[(y+1)*m_width+(x+1)].g*filter[3][3]+m_colors[(y+1)*m_width+(x+2)].g*filter[3][4];
+            b+=m_colors[(y+1)*m_width+(x-2)].b*filter[3][0]+m_colors[(y+1)*m_width+(x-1)].b*filter[3][1]+m_colors[(y+1)*m_width+(x)].b*filter[3][2]+m_colors[(y+1)*m_width+(x+1)].b*filter[3][3]+m_colors[(y+1)*m_width+(x+2)].b*filter[3][4];
 
 
             r+=m_colors[(y+2)*m_width+(x-2)].r*filter[4][0]+m_colors[(y+2)*m_width+(x-1)].r*filter[4][1]+m_colors[(y+2)*m_width+(x)].r*filter[4][2]+m_colors[(y+2)*m_width+(x+1)].r*filter[4][3]+m_colors[(y+2)*m_width+(x+2)].r*filter[4][4];
@@ -654,15 +598,17 @@ void Image::Gaussian_Blur5_5()
 
 void Image:: SobelEdgeDetection()
 {
-     float gx[3][3] = {{-1,0,1},
-                   {-2,0,2},
-                   {-1,0,1}};
+    float gx[3][3] = {{-1,0,1},
+        {-2,0,2},
+        {-1,0,1}
+    };
 
     float gy[3][3] = {{1,2,1},
-                    {0,0,0},
-                    {-1,-2,-1}};
+        {0,0,0},
+        {-1,-2,-1}
+    };
 
-     for(int y=1; y<m_height-1; ++y)
+    for(int y=1; y<m_height-1; ++y)
     {
         for(int x=1; x<m_width-1; ++x)
         {
@@ -715,7 +661,7 @@ void Image:: SobelEdgeDetection()
             }
 
 
-             float avg= (sqrtBlue + sqrtGreen + sqrtRed)/3;
+            float avg= (sqrtBlue + sqrtGreen + sqrtRed)/3;
             m_colors[y*m_width+x].r=avg;
             m_colors[y*m_width+x].g=avg;
             m_colors[y*m_width+x].b=avg;
@@ -917,8 +863,8 @@ void Image :: Export(const char* path)const
 
     unsigned char bmpPad[3]= {0,0,0};
     int paddingAmount=(4-((m_width*3)%4)%4);
- //   cout<<"Padding in Writing Image : "<<endl;
-  //  cout<<paddingAmount<<endl;
+//   cout<<"Padding in Writing Image : "<<endl;
+    //  cout<<paddingAmount<<endl;
     const int fileHeaderSize=14;
     const int infoHeaderSize=40;
     const int fileSize=fileHeaderSize+infoHeaderSize+(m_width*m_height*3)+paddingAmount*m_height;
@@ -1041,7 +987,7 @@ void Image :: Export(const char* path)const
 
 void Image :: Histogram()
 {
-     for(int y=0; y<m_height; ++y)
+    for(int y=0; y<m_height; ++y)
     {
         for(int x=0; x<m_width; ++x)
         {
@@ -1061,7 +1007,7 @@ void Image :: Histogram()
 
     }
 
-    int Hist[256]={0};
+    int Hist[256]= {0};
 
     for(int y=0; y<m_height; ++y)
     {
@@ -1074,14 +1020,14 @@ void Image :: Histogram()
     }
 
 
-    long long int cdf[256]={0};
+    long long int cdf[256]= {0};
     cdf[0]=Hist[0];
 
     for(int i=1; i<256; ++i)
     {
 
 
-       cdf[i]=cdf[i-1]+Hist[i];
+        cdf[i]=cdf[i-1]+Hist[i];
 
     }
 
@@ -1089,18 +1035,18 @@ void Image :: Histogram()
 
 
     int cdfMin;
-  //  cdfMin=min(cdf);
-   cdfMin=cdf[0];
-   for(int i=1; i<256; ++i)
+    //  cdfMin=min(cdf);
+    cdfMin=cdf[0];
+    for(int i=1; i<256; ++i)
     {
         if(cdf[i]<cdfMin)
             cdfMin=cdf[i];
     }
 
 
-    int h[256]={0};
+    int h[256]= {0};
 
-     for(int i=0; i<256; ++i)
+    for(int i=0; i<256; ++i)
     {
         h[i]=round((cdf[i]-cdfMin)*255)/((m_height*m_width)-cdfMin);
 
@@ -1128,10 +1074,10 @@ void printManu()
     cout<<"3->Grayscale"<<endl;
     cout<<"4->Brightening"<<endl;
     cout<<"5->Box Blur"<<endl;
-   // cout<<"5->Flip Image"<<endl;
+    // cout<<"5->Flip Image"<<endl;
     cout<<"6->Gaussian Blur"<<endl;
     cout<<"7->Angle Calculation"<<endl;
-   // cout<<"8->Histogram"<<endl;
+    // cout<<"8->Histogram"<<endl;
     cout<<"9->Export"<<endl;
 
 }
@@ -1153,50 +1099,50 @@ int main()
 
     cout<<"     Reading Image....."<<endl<<endl;
 
-    readImage.Read("baboon.bmp");
+    readImage.Read();
 
 
 
     switch(choice)
     {
-       case 1:
-           break;
+    case 1:
+        break;
 
-       case 2:
-           readImage.Negative();
-           break;
+    case 2:
+        readImage.Negative();
+        break;
 
-       case 3:
-           readImage.Grayscale();
-           break;
+    case 3:
+        readImage.Grayscale();
+        break;
 
-       case 4:
-           readImage.Brightening();
-           break;
+    case 4:
+        readImage.Brightening();
+        break;
 
-       case 5:
-           //readImage.Box_Blur();
-           readImage.Flip();
-           break;
+    case 5:
+        //readImage.Box_Blur();
+        readImage.Flip();
+        break;
 
-       case 6:
-          // readImage.Gaussian_Blur5_5();
-          readImage.SobelEdgeDetection();
-           break;
+    case 6:
+        // readImage.Gaussian_Blur5_5();
+        readImage.SobelEdgeDetection();
+        break;
 
-       case 7:
-           readImage.Sharpen();
-           break;
+    case 7:
+        readImage.Sharpen();
+        break;
 
-       case 8:
-           //readImage.SobelEdgeDetection();
-           break;
+    case 8:
+        //readImage.SobelEdgeDetection();
+        break;
 
-       case 9:
-           break;
+    case 9:
+        break;
 
-       case 10:
-           break;
+    case 10:
+        break;
 
     }
 
@@ -1206,7 +1152,7 @@ int main()
 
 
 
-   // readImage.Read("zebra.bmp");
+    // readImage.Read("zebra.bmp");
 //readImage.Export("baboon.txt");
 //    readImage.Flip();
 
@@ -1220,10 +1166,10 @@ int main()
 
 //    readImage.valueTest();
 //    readImage.Angle_Calculation();
-  //  readImage.Histogram();
- //   readImage.Gaussian_Blur();
+    //  readImage.Histogram();
+//   readImage.Gaussian_Blur();
 
-  //  readImage.Export("exportZebra.bmp");
+    //  readImage.Export("exportZebra.bmp");
 
 //readImage.Export("redImage.txt");
 
