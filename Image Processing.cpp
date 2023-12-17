@@ -1,6 +1,6 @@
-//#include "Image.h"
 #include<iostream>
 #include<vector>
+#include<graphics.h>
 #include<fstream>
 #include<cmath>
 
@@ -8,10 +8,11 @@ using namespace std;
 
 struct Color
 {
-    float r,g,b;
+   float b,g,r;
     Color();
-    Color(float r,float g,float b);
+    Color(float b,float g,float r);
     ~Color();
+
 
 };
 
@@ -23,7 +24,6 @@ public:
     ~Image();
 
     Color GetColor(int x, int y)const;
-    void SetColor(const Color& color, int x,int y);
     void Read();
     void printManu();
     void Negative();
@@ -32,28 +32,34 @@ public:
     void Flip();
     void Sharpen();
     void Smoothing();
-    void Motion_Blur();
+    void Darken();
     void Gaussian_Blur();
     void SobelEdgeDetection();
     void Angle_Calculation();
     void Histogram();
+    void ShowImage(const char* path);
     void Export(const char* path)const;
+
+
 
 private:
     int m_width;
     int m_height;
     vector<Color> m_colors;
+    vector<Color> colors_modified;
+
+
 };
 
 
 Color :: Color()
-    :r(0),g(0),b(0)
+    :b(0),g(0),r(0)
 {
 
 }
 
-Color :: Color(float r,float g,float b)
-    :r(r),g(g),b(b)
+Color :: Color(float b,float g,float r)
+    :b(b),g(g),r(r)
 {
 
 }
@@ -68,6 +74,7 @@ Image :: Image(int width,int height)
 {
 
 }
+
 Image :: ~Image()
 {
 
@@ -75,24 +82,17 @@ Image :: ~Image()
 
 Color Image :: GetColor(int x,int y)const
 {
-    return m_colors[y*m_width+x];
-}
-
-void Image::SetColor(const Color& color, int x,int y)
-{
-    m_colors[y*m_width+x].r=color.r;
-    m_colors[y*m_width+x].g=color.g;
-    m_colors[y*m_width+x].b=color.b;
+    return colors_modified[y*m_width+x];
 }
 
 Image readImage(0,0);
 
+
 void Image::Read()
 {
 
-    // const char* path;
     string path;
-    cout<<"Enter Image Path : ";
+    cout<<"Enter Image : ";
     cin>>path;
 
 
@@ -105,6 +105,7 @@ void Image::Read()
         cout<<"File can't be opened!"<<endl;
         return;
     }
+
 
     const int fileHeaderSize=14;
     const int infoHeaderSize=40;
@@ -119,9 +120,18 @@ void Image::Read()
     m_width=infoHeader[4]+(infoHeader[5]<<8)+(infoHeader[6]<<16)+(infoHeader[7]<<24);
     m_height=infoHeader[8]+(infoHeader[9]<<8)+(infoHeader[10]<<16)+(infoHeader[11]<<24);
 
+    if (fileHeader[0] != 'B' && fileHeader[1] != 'M')
+    {
+        cout << "Invalid BMP file format!" << endl;
+        return;
+    }
+
+    const int bytesPerPixel = 3;
+    int paddingAmount = (4 - ((m_width * bytesPerPixel) % 4)) % 4;
+
 
     m_colors.resize(m_width*m_height);
-    int paddingAmount=(4-((m_width*3)%4)%4);
+
 
 
 
@@ -145,26 +155,47 @@ void Image::Read()
     cout<<"\n\n\n"<<endl;
     cout<<"\t\t\t!!----Image Reading Complete---!!"<<endl;
 
+//    ShowImage((const char*)path);
+
+
+}
+
+void Image :: ShowImage(const char* path)
+{
+
+
+    int heightOfScreen = GetSystemMetrics(SM_CXSCREEN);
+    int widthOfScreen = GetSystemMetrics(SM_CYSCREEN);
+    char nameOfImage[20];
+    snprintf(nameOfImage, 100, "%s",path);
+    initwindow(800,700, nameOfImage,0,0);
+    readimagefile(nameOfImage,200,200,600,600);
+
+    delay(3000);
+    closegraph();
+
 
 }
 
 
 void Image :: Negative()
 {
+    colors_modified = vector<Color> (m_height*m_width);
+
     for(int y=0; y<m_height; ++y)
     {
         for(int x=0; x<m_width; ++x)
         {
             float r=0,g=0,b=0;
 
-            r=abs(255-m_colors[y*m_width+x].r);
-            g=abs(255-m_colors[y*m_width+x].g);
             b=abs(255-m_colors[y*m_width+x].b);
+            g=abs(255-m_colors[y*m_width+x].g);
+            r=abs(255-m_colors[y*m_width+x].r);
 
 
-            m_colors[y*m_width+x].r=r;
-            m_colors[y*m_width+x].g=g;
-            m_colors[y*m_width+x].b=b;
+            colors_modified[y*m_width+x].b=b;
+            colors_modified[y*m_width+x].g=g;
+            colors_modified[y*m_width+x].r=r;
         }
 
     }
@@ -181,22 +212,28 @@ void Image :: Negative()
 
 void Image :: Grayscale()
 {
+
+    colors_modified = vector<Color> (m_height*m_width);
+
+
+    float avg=0;
     for(int y=0; y<m_height; ++y)
     {
         for(int x=0; x<m_width; ++x)
         {
             float r=0,g=0,b=0;
 
-            r=m_colors[y*m_width+x].r;
-            g=m_colors[y*m_width+x].g;
             b=m_colors[y*m_width+x].b;
+            g=m_colors[y*m_width+x].g;
+            r=m_colors[y*m_width+x].r;
 
-            float avg=0;
+
             avg=(r+g+b)/3;
 
-            m_colors[y*m_width+x].r=avg;
-            m_colors[y*m_width+x].g=avg;
-            m_colors[y*m_width+x].b=avg;
+
+            colors_modified[y*m_width+x].b=avg;
+            colors_modified[y*m_width+x].g=avg;
+            colors_modified[y*m_width+x].r=avg;
         }
 
     }
@@ -215,6 +252,7 @@ void Image :: Grayscale()
 
 void Image :: Brightening()
 {
+    colors_modified = vector<Color> (m_height*m_width);
 
     cout << "---------------------Brightening--------------------\n\n";
     cout << "Input the brightness level between -255 to +255 : ";
@@ -236,15 +274,15 @@ void Image :: Brightening()
 
                 r=m_colors[y*m_width+x].r;
                 r = r + min(level, (255 - r));
-                m_colors[y*m_width+x].r=max(0.0, r);
+                colors_modified[y*m_width+x].r=max(0.0, r);
 
                 g=m_colors[y*m_width+x].g;
                 g = g + min(level, (255 - g));
-                m_colors[y*m_width+x].g=max(0.0, g);
+                colors_modified[y*m_width+x].g=max(0.0, g);
 
                 b=m_colors[y*m_width+x].b;
                 b = b + min(level, (255 - b));
-                m_colors[y*m_width+x].b=max(0.0, b);
+                colors_modified[y*m_width+x].b=max(0.0, b);
             }
         }
     }
@@ -261,91 +299,145 @@ void Image :: Brightening()
 
 }
 
+void Image :: Darken()
+{
+    colors_modified = vector<Color> (m_height*m_width);
+
+
+    cout << "Input the darkness level between -255 to +255 : ";
+    double level;
+    cin >> level;
+
+    if(level > 255 || level < -255)
+    {
+        cout<<"Invalid brightness level";
+        return;
+    }
+    else
+    {
+        for(int y = 0; y < m_height; y++)
+        {
+            for(int x = 0; x < m_width; x++)
+            {
+                double r=0,g=0,b=0;
+
+                r=m_colors[y*m_width+x].r;
+                r = r - level;
+                colors_modified[y*m_width+x].r=max(0.0, r);
+
+                g=m_colors[y*m_width+x].g;
+                g = g - level;
+                colors_modified[y*m_width+x].g=max(0.0, g);
+
+                b=m_colors[y*m_width+x].b;
+                b = b - level;
+                colors_modified[y*m_width+x].b=max(0.0, b);
+            }
+        }
+    }
+
+
+
+    cout<<"\n"<<endl;
+    cout<<"\t\t\t!!----Image Darkening Complete---!!"<<endl;
+    cout<<"\n"<<endl;
+
+    cout<<"\tCreating Darken Image......"<<endl;
+    cout<<"\tDarken Image Created named \"DarkenImage.bmp\"......"<<endl;
+    readImage.Export("DarkenImage.bmp");
+
+}
+
 void Image :: Flip()
 {
-    /*  vector<vector<Color>> M_colors;
-
-       for (int x = 0; x< m_height; ++x)
-      {
-          for (int y = 0; y< m_width; ++y)
-          {
-              M_colors[x][y].r=m_colors[x*m_width+y].r;
-              M_colors[x][y].g=m_colors[x*m_width+y].g;
-              M_colors[x][y].b=m_colors[x*m_width+y].b;
-
-          }
-      }
-
-       for (int x = 0; x< m_height; ++x)
-      {
-          for (int y = 0; y< m_width/2; ++y)
-          {
-              float  red=0,green=0,blue=0;
+    colors_modified = vector<Color> (m_height*m_width);
 
 
-              red=M_colors[x][m_width-1-y].r;
-              M_colors[x][m_width-1-y].r=M_colors[x][y].r;
-              M_colors[x][y].r=red;
+    cout<<"\t\t\t\t!!----------Flipping Image----------!!"<<endl;
 
-              green=M_colors[x][m_width-1-y].g;
-              M_colors[x][m_width-1-y].g=M_colors[x][y].g;
-              M_colors[x][y].g=green;
-
-              blue=M_colors[x][m_width-1-y].b;
-              M_colors[x][m_width-1-y].b=M_colors[x][y].b;
-              M_colors[x][y].b=blue;
+    cout<<"1-> Horizontal Flip"<<endl;
+    cout<<"2-> Vertical Flip "<<endl;
 
 
-          }
+    int choice;
 
-      }
+    cout<<endl;
+    cout<<"Enter Choice : ";
+    cin>>choice;
 
-      for (int x = 0; x< m_height; ++x)
-      {
-          for (int y = 0; y< m_width; ++y)
-          {
-              m_colors[x*m_width+y].r=M_colors[x][y].r;
-              m_colors[x*m_width+y].g=M_colors[x][y].g;
-              m_colors[x*m_width+y].b=M_colors[x][y].b;
 
-          }
-      } */
-    for (int y = 0; y< m_height; ++y)
+
+    if(choice == 1)
+    {
+
+        cout<<"          Horizontal Flip       "<<endl;
+
+
+
+     for (int y = 0; y< m_height; ++y)
     {
         for (int x = 0; x < m_width/2; ++x)
         {
 
-            swap(m_colors[y*m_width+x], m_colors[y*m_width+(m_width-x-1)]);
-
-            /*
-            float  red=0,green=0,blue=0;
+            colors_modified[y*m_width+(m_width-x-1)].r=m_colors[y*m_width+x].r;
+            colors_modified[y*m_width+x].r=m_colors[y*m_width+(m_width-x-11)].r;
 
 
-            red=m_colors[y*m_width+(m_width-x+1)].r;
-            m_colors[y*m_width+(m_width-x+1)].r=m_colors[y*m_width+x].r;
-            m_colors[y*m_width+x].r=red;
+            colors_modified[y*m_width+(m_width-x-1)].g=m_colors[y*m_width+x].g;
+            colors_modified[y*m_width+x].g=m_colors[y*m_width+(m_width-x-1)].g;
 
-            green=m_colors[y*m_width+(m_width-x+1)].g;
-            m_colors[y*m_width+(m_width-x+1)].g=m_colors[y*m_width+x].g;
-            m_colors[y*m_width+x].g=green;
+            colors_modified[y*m_width+(m_width-x-1)].b=m_colors[y*m_width+x].b;
+            colors_modified[y*m_width+x].b=m_colors[y*m_width+(m_width-x-1)].b;
 
-            blue=m_colors[y*m_width+(m_width-x+1)].b;
-            m_colors[y*m_width+(m_width-x+1)].b=m_colors[y*m_width+x].b;
-            m_colors[y*m_width+x].b=blue;   */
 
 
         }
 
     }
 
-    cout<<"Flip complete!"<<endl;
+    }
+    else if(choice == 2)
+    {
+        cout<<"          Vertical Flip "<<endl;
 
+
+    for (int y = 0; y< m_height/2; ++y)
+    {
+        for (int x = 0; x < m_width; ++x)
+        {
+
+            colors_modified[(m_height-y-1)*m_width+x].r=m_colors[y*m_width+x].r;
+            colors_modified[y*m_width+x].r=m_colors[(m_height-y-1)*m_width+x].r;
+
+
+            colors_modified[(m_height-y-1)*m_width+x].g=m_colors[y*m_width+x].g;
+            colors_modified[y*m_width+x].g=m_colors[(m_height-y-1)*m_width+x].g;
+
+            colors_modified[(m_height-y-1)*m_width+x].b=m_colors[y*m_width+x].b;
+            colors_modified[y*m_width+x].b=m_colors[(m_height-y-1)*m_width+x].b;
+
+
+
+        }
+
+    }
+
+    }
+
+    cout<<"\n"<<endl;
+    cout<<"\t\t\t!!----Image Flip Complete---!!"<<endl;
+    cout<<"\n"<<endl;
+
+    cout<<"\tCreating Flip Image......"<<endl;
+    cout<<"\Flip Image Created named \"FlipImage.bmp\"......"<<endl;
+    readImage.Export("FlipImage.bmp");
 }
 
 
 void Image::Smoothing()
 {
 
+    colors_modified = vector<Color> (m_height*m_width);
 
     float filter[3][3]=
     {
@@ -379,9 +471,9 @@ void Image::Smoothing()
             b/=9;
 
 
-            m_colors[y*m_width+x].r=r;
-            m_colors[y*m_width+x].g=g;
-            m_colors[y*m_width+x].b=b;
+            colors_modified[y*m_width+x].r=r;
+            colors_modified[y*m_width+x].g=g;
+            colors_modified[y*m_width+x].b=b;
         }
 
     }
@@ -400,6 +492,8 @@ void Image::Smoothing()
 
 void Image::Sharpen()
 {
+    colors_modified = vector<Color> (m_height*m_width);
+
     int kernel[4][9] =
     {
         {0, 1, 0, 1, -4, 1, 0, 1, 0},
@@ -420,10 +514,11 @@ void Image::Sharpen()
 
     cout<<"choice : ";
     cin>>choice;
+    choice--;
 
     cout<<"\n\n\n"<<endl;
 
-    for(int i=0; i<3; ++i)
+   for(int i=0; i<3; ++i)
     {
         for(int j=0; j<3; ++j)
         {
@@ -433,11 +528,6 @@ void Image::Sharpen()
 
     }
 
-    // float filter[3][3]= {{-1,-1,-1},{-1,9,-1},{-1,-1,-1}};
-
-    //  float filter[3][3]= {{0,-1,0},{-1,5,-1},{0,-1,0}};
-
-    //  int filter[3][3]={{1,2,1},{2,4,2},{1,2,1}};
 
 
 
@@ -470,9 +560,9 @@ void Image::Sharpen()
             b=max(0.0, b);
 
 
-            m_colors[y*m_width+x].r=r;
-            m_colors[y*m_width+x].g=g;
-            m_colors[y*m_width+x].b=b;
+            colors_modified[y*m_width+x].r=r;
+            colors_modified[y*m_width+x].g=g;
+            colors_modified[y*m_width+x].b=b;
         }
 
     }
@@ -487,83 +577,17 @@ void Image::Sharpen()
 
 }
 
-void Image::Motion_Blur()
-{
-
-    //  float filter[3][3]={{-1,-2,-1},{0,0,0},{1,2,1}};
-
-             int filter[5][5]=
-    {
-        {0,0,0,0,0},
-        {0,0,0,0,0},
-        {1,1,1,1,1},
-        {0,0,0,0,0},
-        {0,0,0,0,0},
-    };
-
-
-
-    for(int y=2; y<m_height-2; ++y)
-    {
-        for(int x=2; x<m_width-2; ++x)
-        {
-            float r=0,g=0,b=0;
-
-            r+=m_colors[(y-2)*m_width+(x-2)].r*filter[0][0]+m_colors[(y-2)*m_width+(x-1)].r*filter[0][1]+m_colors[(y-2)*m_width+(x)].r*filter[0][2]+m_colors[(y-2)*m_width+(x+1)].r*filter[0][3]+m_colors[(y-2)*m_width+(x+2)].r*filter[0][4];
-            g+=m_colors[(y-2)*m_width+(x-2)].g*filter[0][0]+m_colors[(y-2)*m_width+(x-1)].g*filter[0][1]+m_colors[(y-2)*m_width+(x)].g*filter[0][2]+m_colors[(y-2)*m_width+(x+1)].g*filter[0][3]+m_colors[(y-2)*m_width+(x+2)].g*filter[0][4];
-            b+=m_colors[(y-2)*m_width+(x-2)].b*filter[0][0]+m_colors[(y-2)*m_width+(x-1)].b*filter[0][1]+m_colors[(y-2)*m_width+(x)].b*filter[0][2]+m_colors[(y-2)*m_width+(x+1)].b*filter[0][3]+m_colors[(y-2)*m_width+(x+2)].b*filter[0][4];
-
-            r+=m_colors[(y-1)*m_width+(x-2)].r*filter[1][0]+m_colors[(y-1)*m_width+(x-1)].r*filter[1][1]+m_colors[(y-1)*m_width+(x)].r*filter[1][2]+m_colors[(y-1)*m_width+(x+1)].r*filter[1][3]+m_colors[(y-1)*m_width+(x+2)].r*filter[1][4];
-            g+=m_colors[(y-1)*m_width+(x-2)].g*filter[1][0]+m_colors[(y-1)*m_width+(x-1)].g*filter[1][1]+m_colors[(y-1)*m_width+(x)].g*filter[1][2]+m_colors[(y-1)*m_width+(x+1)].g*filter[1][3]+m_colors[(y-1)*m_width+(x+2)].g*filter[1][4];
-            b+=m_colors[(y-1)*m_width+(x-2)].b*filter[1][0]+m_colors[(y-1)*m_width+(x-1)].b*filter[1][1]+m_colors[(y-1)*m_width+(x)].b*filter[1][2]+m_colors[(y-1)*m_width+(x+1)].b*filter[1][3]+m_colors[(y-1)*m_width+(x+2)].b*filter[1][4];
-
-            r+=m_colors[(y)*m_width+(x-2)].r*filter[2][0]+m_colors[(y)*m_width+(x-1)].r*filter[2][1]+m_colors[(y)*m_width+(x)].r*filter[2][2]+m_colors[(y)*m_width+(x+1)].r*filter[2][3]+m_colors[(y)*m_width+(x+2)].r*filter[2][4];
-            g+=m_colors[(y)*m_width+(x-2)].g*filter[2][0]+m_colors[(y)*m_width+(x-1)].g*filter[2][1]+m_colors[(y)*m_width+(x)].g*filter[2][2]+m_colors[(y)*m_width+(x+1)].g*filter[2][3]+m_colors[(y)*m_width+(x+2)].g*filter[2][4];
-            b+=m_colors[(y)*m_width+(x-2)].b*filter[2][0]+m_colors[(y)*m_width+(x-1)].b*filter[2][1]+m_colors[(y)*m_width+(x)].b*filter[2][2]+m_colors[(y)*m_width+(x+1)].b*filter[2][3]+m_colors[(y)*m_width+(x+2)].b*filter[2][4];
-
-
-            r+=m_colors[(y+1)*m_width+(x-2)].r*filter[3][0]+m_colors[(y+1)*m_width+(x-1)].r*filter[3][1]+m_colors[(y+1)*m_width+(x)].r*filter[3][2]+m_colors[(y+1)*m_width+(x+1)].r*filter[3][3]+m_colors[(y+1)*m_width+(x+2)].r*filter[3][4];
-            g+=m_colors[(y+1)*m_width+(x-2)].g*filter[3][0]+m_colors[(y+1)*m_width+(x-1)].g*filter[3][1]+m_colors[(y+1)*m_width+(x)].g*filter[3][2]+m_colors[(y+1)*m_width+(x+1)].g*filter[3][3]+m_colors[(y+1)*m_width+(x+2)].g*filter[3][4];
-            b+=m_colors[(y+1)*m_width+(x-2)].b*filter[3][0]+m_colors[(y+1)*m_width+(x-1)].b*filter[3][1]+m_colors[(y+1)*m_width+(x)].b*filter[3][2]+m_colors[(y+1)*m_width+(x+1)].b*filter[3][3]+m_colors[(y+1)*m_width+(x+2)].b*filter[3][4];
-
-
-            r+=m_colors[(y+2)*m_width+(x-2)].r*filter[4][0]+m_colors[(y+2)*m_width+(x-1)].r*filter[4][1]+m_colors[(y+2)*m_width+(x)].r*filter[4][2]+m_colors[(y+2)*m_width+(x+1)].r*filter[4][3]+m_colors[(y+2)*m_width+(x+2)].r*filter[4][4];
-            g+=m_colors[(y+2)*m_width+(x-2)].g*filter[4][0]+m_colors[(y+2)*m_width+(x-1)].g*filter[4][1]+m_colors[(y+2)*m_width+(x)].g*filter[4][2]+m_colors[(y+2)*m_width+(x+1)].g*filter[4][3]+m_colors[(y+2)*m_width+(x+2)].g*filter[4][4];
-            b+=m_colors[(y+2)*m_width+(x-2)].b*filter[4][0]+m_colors[(y+2)*m_width+(x-1)].b*filter[4][1]+m_colors[(y+2)*m_width+(x)].b*filter[4][2]+m_colors[(y+2)*m_width+(x+1)].b*filter[4][3]+m_colors[(y+2)*m_width+(x+2)].b*filter[4][4];
-
-
-
-            r/=5;
-            g/=5;
-            b/=5;
-
-            m_colors[y*m_width+x].r=r;
-            m_colors[y*m_width+x].g=g;
-            m_colors[y*m_width+x].b=b;
-        }
-
-    }
-
-
-    cout<<"\n"<<endl;
-    cout<<"\t\t\t!!----Motion Blur Complete---!!"<<endl;
-    cout<<"\n"<<endl;
-
-
-    cout<<"\tCreating Blur Image......"<<endl;
-    cout<<"\tBlur Image Created named \"MotionBlurImage.bmp\"......"<<endl;
-    readImage.Export("MotionBlurImage.bmp");
-
-}
 
 
 void Image::Gaussian_Blur()
 {
+     colors_modified = vector<Color> (m_height*m_width);
+
 
     cout<<"\t\t\t\t!!----------Gaussian Blur----------!!"<<endl;
 
-    cout<<"1-> (3 * 3) Gaussian Blur"<<endl;
-    cout<<"2-> (5 * 5) Gaussian Blur"<<endl;
+    cout<<"1-> (3 x 3) Gaussian Blur"<<endl;
+    cout<<"2-> (5 x 5) Gaussian Blur"<<endl;
 
 
     int choice;
@@ -610,9 +634,9 @@ void Image::Gaussian_Blur()
             b/=16;
 
 
-            m_colors[y*m_width+x].r=r;
-            m_colors[y*m_width+x].g=g;
-            m_colors[y*m_width+x].b=b;
+            colors_modified[y*m_width+x].r=r;
+            colors_modified[y*m_width+x].g=g;
+            colors_modified[y*m_width+x].b=b;
         }
 
     }
@@ -666,9 +690,9 @@ void Image::Gaussian_Blur()
             g/=256;
             b/=256;
 
-            m_colors[y*m_width+x].r=r;
-            m_colors[y*m_width+x].g=g;
-            m_colors[y*m_width+x].b=b;
+            colors_modified[y*m_width+x].r=r;
+            colors_modified[y*m_width+x].g=g;
+            colors_modified[y*m_width+x].b=b;
         }
 
     }
@@ -694,9 +718,39 @@ void Image::Gaussian_Blur()
 
 void Image:: SobelEdgeDetection()
 {
-    int gx[3][3] = {{-1,0,1},
-        {-2,0,2},
-        {-1,0,1}
+
+     colors_modified = vector<Color> (m_height*m_width);
+
+     vector<Color>colors_avg = vector<Color> (m_height*m_width);
+
+
+     float avg=0;
+
+    for(int y=0; y<m_height; ++y)
+    {
+        for(int x=0; x<m_width; ++x)
+        {
+            float r=0,g=0,b=0;
+
+            b=m_colors[y*m_width+x].b;
+            g=m_colors[y*m_width+x].g;
+            r=m_colors[y*m_width+x].r;
+
+
+            avg=(r+g+b)/3;
+
+            colors_avg[y*m_width+x].b=avg;
+            colors_avg[y*m_width+x].g=avg;
+            colors_avg[y*m_width+x].r=avg;
+
+
+        }
+
+    }
+
+    int gx[3][3] = {{1,0,-1},
+        {2,0,-2},
+        {1,0,-1}
     };
 
     int gy[3][3] = {{1,2,1},
@@ -705,55 +759,64 @@ void Image:: SobelEdgeDetection()
     };
 
     int upThreshold;
-    cout<<"Enter Threshold upper value for Edge Detection : ";
+    cout<<"Enter Threshold value for Edge Detection : ";
     cin>>upThreshold;
 
 
-    int downThreshold;
-    cout<<"Enter Threshold lower value for Edge Detection : ";
-    cin>>downThreshold;
+
+    int gxValBlue;
+    int gyValBlue;
+
+    int gxValGreen;
+    int gyValGreen;
+
+    int gxValRed;
+    int gyValRed;
+
+    int sqrtBlue;
+    int sqrtGreen;
+    int sqrtRed;
 
 
-    for(int y=1; y<m_height-1; ++y)
+
+    for(int y=0; y<m_height; ++y)
     {
-        for(int x=1; x<m_width-1; ++x)
+        for(int x=0; x<m_width; ++x)
         {
+            if(y!=0 && y!=m_height-1 && x!=0 && x!=m_width-1)
+            {
             float Rx=0,Gx=0,Bx=0;
 
+            Rx+=colors_avg[(y-1)*m_width+(x-1)].r*gx[0][0]+colors_avg[(y-1)*m_width+(x)].r*gx[0][1]+colors_avg[(y-1)*m_width+(x+1)].r*gx[0][2];
+            Gx+=colors_avg[(y-1)*m_width+(x-1)].g*gx[0][0]+colors_avg[(y-1)*m_width+(x)].g*gx[0][1]+colors_avg[(y-1)*m_width+(x+1)].g*gx[0][2];
+            Bx+=colors_avg[(y-1)*m_width+(x-1)].b*gx[0][0]+colors_avg[(y-1)*m_width+(x)].b*gx[0][1]+colors_avg[(y-1)*m_width+(x+1)].b*gx[0][2];
 
-            Rx+=m_colors[(y-1)*m_width+(x-1)].r*gx[0][0]+m_colors[(y-1)*m_width+(x)].r*gx[0][1]+m_colors[(y-1)*m_width+(x+1)].r*gx[0][2];
-            Gx+=m_colors[(y-1)*m_width+(x-1)].g*gx[0][0]+m_colors[(y-1)*m_width+(x)].g*gx[0][1]+m_colors[(y-1)*m_width+(x+1)].g*gx[0][2];
-            Bx+=m_colors[(y-1)*m_width+(x-1)].b*gx[0][0]+m_colors[(y-1)*m_width+(x)].b*gx[0][1]+m_colors[(y-1)*m_width+(x+1)].b*gx[0][2];
+            Rx+=colors_avg[(y)*m_width+(x-1)].r*gx[1][0]+colors_avg[(y)*m_width+(x)].r*gx[1][1]+colors_avg[(y)*m_width+(x+1)].r*gx[1][2];
+            Gx+=colors_avg[(y)*m_width+(x-1)].g*gx[1][0]+colors_avg[(y)*m_width+(x)].g*gx[1][1]+colors_avg[(y)*m_width+(x+1)].g*gx[1][2];
+            Bx+=colors_avg[(y)*m_width+(x-1)].b*gx[1][0]+colors_avg[(y)*m_width+(x)].b*gx[1][1]+colors_avg[(y)*m_width+(x+1)].b*gx[1][2];
 
-            Rx+=m_colors[(y)*m_width+(x-1)].r*gx[1][0]+m_colors[(y)*m_width+(x)].r*gx[1][1]+m_colors[(y)*m_width+(x+1)].r*gx[1][2];
-            Gx+=m_colors[(y)*m_width+(x-1)].g*gx[1][0]+m_colors[(y)*m_width+(x)].g*gx[1][1]+m_colors[(y)*m_width+(x+1)].g*gx[1][2];
-            Bx+=m_colors[(y)*m_width+(x-1)].b*gx[1][0]+m_colors[(y)*m_width+(x)].b*gx[1][1]+m_colors[(y)*m_width+(x+1)].b*gx[1][2];
-
-            Rx+=m_colors[(y+1)*m_width+(x-1)].r*gx[2][0]+m_colors[(y+1)*m_width+(x)].r*gx[2][1]+m_colors[(y+1)*m_width+(x+1)].r*gx[2][2];
-            Gx+=m_colors[(y+1)*m_width+(x-1)].g*gx[2][0]+m_colors[(y+1)*m_width+(x)].g*gx[2][1]+m_colors[(y+1)*m_width+(x+1)].g*gx[2][2];
-            Bx+=m_colors[(y+1)*m_width+(x-1)].b*gx[2][0]+m_colors[(y+1)*m_width+(x)].b*gx[2][1]+m_colors[(y+1)*m_width+(x+1)].b*gx[2][2];
+            Rx+=colors_avg[(y+1)*m_width+(x-1)].r*gx[2][0]+colors_avg[(y+1)*m_width+(x)].r*gx[2][1]+colors_avg[(y+1)*m_width+(x+1)].r*gx[2][2];
+            Gx+=colors_avg[(y+1)*m_width+(x-1)].g*gx[2][0]+colors_avg[(y+1)*m_width+(x)].g*gx[2][1]+colors_avg[(y+1)*m_width+(x+1)].g*gx[2][2];
+            Bx+=colors_avg[(y+1)*m_width+(x-1)].b*gx[2][0]+colors_avg[(y+1)*m_width+(x)].b*gx[2][1]+colors_avg[(y+1)*m_width+(x+1)].b*gx[2][2];
 
             double Ry=0,Gy=0,By=0;
 
-            Ry+=m_colors[(y-1)*m_width+(x-1)].r*gy[0][0]+m_colors[(y-1)*m_width+(x)].r*gy[0][1]+m_colors[(y-1)*m_width+(x+1)].r*gy[0][2];
-            Gy+=m_colors[(y-1)*m_width+(x-1)].g*gy[0][0]+m_colors[(y-1)*m_width+(x)].g*gy[0][1]+m_colors[(y-1)*m_width+(x+1)].g*gy[0][2];
-            By+=m_colors[(y-1)*m_width+(x-1)].b*gy[0][0]+m_colors[(y-1)*m_width+(x)].b*gy[0][1]+m_colors[(y-1)*m_width+(x+1)].b*gy[0][2];
+            Ry+=colors_avg[(y-1)*m_width+(x-1)].r*gy[0][0]+colors_avg[(y-1)*m_width+(x)].r*gy[0][1]+colors_avg[(y-1)*m_width+(x+1)].r*gy[0][2];
+            Gy+=colors_avg[(y-1)*m_width+(x-1)].g*gy[0][0]+colors_avg[(y-1)*m_width+(x)].g*gy[0][1]+colors_avg[(y-1)*m_width+(x+1)].g*gy[0][2];
+            By+=colors_avg[(y-1)*m_width+(x-1)].b*gy[0][0]+colors_avg[(y-1)*m_width+(x)].b*gy[0][1]+colors_avg[(y-1)*m_width+(x+1)].b*gy[0][2];
 
-            Ry+=m_colors[(y)*m_width+(x-1)].r*gy[1][0]+m_colors[(y)*m_width+(x)].r*gy[1][1]+m_colors[(y)*m_width+(x+1)].r*gy[1][2];
-            Gy+=m_colors[(y)*m_width+(x-1)].g*gy[1][0]+m_colors[(y)*m_width+(x)].g*gy[1][1]+m_colors[(y)*m_width+(x+1)].g*gy[1][2];
-            By+=m_colors[(y)*m_width+(x-1)].b*gy[1][0]+m_colors[(y)*m_width+(x)].b*gy[1][1]+m_colors[(y)*m_width+(x+1)].b*gy[1][2];
+            Ry+=colors_avg[(y)*m_width+(x-1)].r*gy[1][0]+colors_avg[(y)*m_width+(x)].r*gy[1][1]+colors_avg[(y)*m_width+(x+1)].r*gy[1][2];
+            Gy+=colors_avg[(y)*m_width+(x-1)].g*gy[1][0]+colors_avg[(y)*m_width+(x)].g*gy[1][1]+colors_avg[(y)*m_width+(x+1)].g*gy[1][2];
+            By+=colors_avg[(y)*m_width+(x-1)].b*gy[1][0]+colors_avg[(y)*m_width+(x)].b*gy[1][1]+colors_avg[(y)*m_width+(x+1)].b*gy[1][2];
 
-            Ry+=m_colors[(y+1)*m_width+(x-1)].r*gy[2][0]+m_colors[(y+1)*m_width+(x)].r*gy[2][1]+m_colors[(y+1)*m_width+(x+1)].r*gy[2][2];
-            Gy+=m_colors[(y+1)*m_width+(x-1)].g*gy[2][0]+m_colors[(y+1)*m_width+(x)].g*gy[2][1]+m_colors[(y+1)*m_width+(x+1)].g*gy[2][2];
-            By+=m_colors[(y+1)*m_width+(x-1)].b*gy[2][0]+m_colors[(y+1)*m_width+(x)].b*gy[2][1]+m_colors[(y+1)*m_width+(x+1)].b*gy[2][2];
+            Ry+=colors_avg[(y+1)*m_width+(x-1)].r*gy[2][0]+colors_avg[(y+1)*m_width+(x)].r*gy[2][1]+colors_avg[(y+1)*m_width+(x+1)].r*gy[2][2];
+            Gy+=colors_avg[(y+1)*m_width+(x-1)].g*gy[2][0]+colors_avg[(y+1)*m_width+(x)].g*gy[2][1]+colors_avg[(y+1)*m_width+(x+1)].g*gy[2][2];
+            By+=colors_avg[(y+1)*m_width+(x-1)].b*gy[2][0]+colors_avg[(y+1)*m_width+(x)].b*gy[2][1]+colors_avg[(y+1)*m_width+(x+1)].b*gy[2][2];
 
 
             double sqrtBlue = (double)(sqrt(Bx*Bx + By*By));
             double sqrtGreen = (double)(sqrt(Gx*Gx+ Gy*Gy));
             double sqrtRed = (double)(sqrt(Rx*Rx + Ry*Ry));
-
-
-
 
             if(sqrtBlue > upThreshold)
             {
@@ -782,30 +845,25 @@ void Image:: SobelEdgeDetection()
 
 
 
-            if(sqrtBlue < downThreshold)
-            {
-                sqrtBlue = 0;
-            }
-            if(sqrtGreen < downThreshold)
-            {
-                sqrtGreen = 0;
-            }
-            if(sqrtRed < downThreshold)
-            {
-                sqrtRed = 0;
-            }
+            colors_modified[y*m_width+x].b=sqrtBlue;
+            colors_modified[y*m_width+x].g=sqrtGreen;
+            colors_modified[y*m_width+x].r=sqrtRed ;
 
 
+        }else
+        {
 
-
-            float avg= (sqrtBlue + sqrtGreen + sqrtRed)/3;
-            m_colors[y*m_width+x].r=avg;
-            m_colors[y*m_width+x].g=avg;
-            m_colors[y*m_width+x].b=avg;
+            colors_modified[y*m_width+x].r=0;
+            colors_modified[y*m_width+x].g=0;
+            colors_modified[y*m_width+x].b=0;
 
         }
 
+        }
+
+
     }
+
 
 
 
@@ -823,6 +881,8 @@ void Image:: SobelEdgeDetection()
 void Image::Angle_Calculation()
 {
 
+    colors_modified = vector<Color> (m_height*m_width);
+
    int gx[3][3] = {{-1,0,1},
         {-2,0,2},
         {-1,0,1}
@@ -834,12 +894,12 @@ void Image::Angle_Calculation()
     };
 
     int upThreshold;
-    cout<<"Enter Threshold upper value for Edge Detection : ";
+    cout<<"Enter Threshold upper value for Angle Detection : ";
     cin>>upThreshold;
 
 
     int downThreshold;
-    cout<<"Enter Threshold lower value for Edge Detection : ";
+    cout<<"Enter Threshold lower value for Angle Detection : ";
     cin>>downThreshold;
 
 
@@ -921,35 +981,34 @@ void Image::Angle_Calculation()
             {
                 AngleR = 255;
             }
+            else
+            {
+               AngleR = 0;
+            }
             if(AngleG > upThreshold)
             {
                 AngleG = 255;
+            }
+            else
+            {
+               AngleG = 0;
             }
             if(AngleB > upThreshold)
             {
                 AngleB = 255;
             }
-
-
-
-
-            if(AngleR < downThreshold)
+            else
             {
-                AngleR = 0;
-            }
-            if(AngleG < downThreshold)
-            {
-                AngleG = 0;
-            }
-            if(AngleB < downThreshold)
-            {
-                AngleB = 0;
+               AngleB = 0;
             }
 
 
-            m_colors[y*m_width+x].r=AngleR;
-            m_colors[y*m_width+x].g=AngleG;
-            m_colors[y*m_width+x].b=AngleB;
+
+
+
+            colors_modified[y*m_width+x].r=AngleR;
+            colors_modified[y*m_width+x].g=AngleG;
+            colors_modified[y*m_width+x].b=AngleB;
 
 
 
@@ -974,6 +1033,10 @@ void Image::Angle_Calculation()
 
 void Image :: Histogram()
 {
+
+    colors_modified = vector<Color> (m_height*m_width);
+
+
     for(int y=0; y<m_height; ++y)
     {
         for(int x=0; x<m_width; ++x)
@@ -987,9 +1050,9 @@ void Image :: Histogram()
             int avg=0;
             avg=(r+g+b)/3;
 
-            m_colors[y*m_width+x].r=avg;
-            m_colors[y*m_width+x].g=avg;
-            m_colors[y*m_width+x].b=avg;
+            colors_modified[y*m_width+x].r=avg;
+            colors_modified[y*m_width+x].g=avg;
+            colors_modified[y*m_width+x].b=avg;
         }
 
     }
@@ -1001,7 +1064,8 @@ void Image :: Histogram()
         for(int x=0; x<m_width; ++x)
         {
             int val=0;
-            val=m_colors[y*m_width+x].r;
+            val=colors_modified\
+            [y*m_width+x].r;
             Hist[val]+=1;
         }
     }
@@ -1085,11 +1149,14 @@ void Image :: Export(const char* path)const
         return;
     }
 
+
     unsigned char bmpPad[3]= {0,0,0};
-    int paddingAmount=(4-((m_width*3)%4)%4);
-    const int fileHeaderSize=14;
-    const int infoHeaderSize=40;
-    const int fileSize=fileHeaderSize+infoHeaderSize+(m_width*m_height*3)+paddingAmount*m_height;
+    const int fileHeaderSize = 14;
+    const int infoHeaderSize = 40;
+    const int bytesPerPixel = 3;
+    int paddingAmount = (4 - ((m_width * bytesPerPixel) % 4)) % 4;
+    const uint32_t fileSize = fileHeaderSize + infoHeaderSize + (m_width * m_height * bytesPerPixel) + paddingAmount * m_height;
+
 
     unsigned char fileHeader[fileHeaderSize];
 
@@ -1195,7 +1262,7 @@ void Image :: Export(const char* path)const
             unsigned char g=static_cast<unsigned char>(GetColor(x,y).g);
             unsigned char b=static_cast<unsigned char>(GetColor(x,y).b);
 
-            unsigned char color[]= {r,g,b};
+            unsigned char color[]= {b,g,r};
             f.write(reinterpret_cast<char*>(color),3);
         }
         f.write(reinterpret_cast<char*>(bmpPad),paddingAmount);
@@ -1204,12 +1271,20 @@ void Image :: Export(const char* path)const
     f.close();
     cout<<"File created"<<endl;
 
+    readImage.ShowImage(path);
+
+
+
 }
 
 
 
-void printManu()
+void Image :: printManu()
 {
+    cout<<"\n";
+    cout<<"\t\t\t";
+    cout<<"!!!----------Basic Image Processing Tools----------!!!"<<endl;
+
     cout<<endl;
     cout<<"1->Read Image"<<endl;
     cout<<"2->Negative"<<endl;
@@ -1218,25 +1293,22 @@ void printManu()
     cout<<"5->Flip Image"<<endl;
     cout<<"6->Sharpen Image"<<endl;
     cout<<"7->Smoothing Image"<<endl;
-    cout<<"8->Motion Blur"<<endl;
+    cout<<"8->Darkening"<<endl;
     cout<<"9->Gaussian Blur"<<endl;
     cout<<"10->Sobel Edge Detection"<<endl;
-    cout<<"11->Angle Calculation"<<endl;
+    cout<<"11->Angle Detection"<<endl;
     cout<<"12->Histogram"<<endl;
-    cout<<"13->Exit"<<endl;
+    cout<<"13->Export Image"<<endl;
+    cout<<"14->Exit"<<endl;
+
 
 }
+
 
 int main()
 {
 
-    cout<<"\n";
-    cout<<"\t\t\t";
-    cout<<"!!!----------Basic Image Processing Tools----------!!!"<<endl;
-
-
-    printManu();
-
+    readImage.printManu();
 
     bool flag;
     flag=true;
@@ -1282,7 +1354,7 @@ int main()
             break;
 
         case 8:
-            readImage.Motion_Blur();
+            readImage.Darken();
             break;
 
         case 9:
@@ -1302,12 +1374,20 @@ int main()
             break;
 
         case 13:
+            readImage.Export("TestImage.bmp");
+            break;
+
+        case 14:
+            cout<<"\t\t\t\t...Thank You for using Image Processing Tools..."<<endl;
             flag=false;
             break;
 
         default :
             cout<<"Invalid Input !"<<endl;
             cout<<"Try Again."<<endl;
+            flag=false;
+
+
 
         }
 
